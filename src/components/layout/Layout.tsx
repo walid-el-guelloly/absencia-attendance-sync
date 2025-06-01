@@ -18,7 +18,7 @@ const Layout = ({ children, user, onLogout }: LayoutProps) => {
       
       <div className="flex">
         <Sidebar user={user} />
-        <main className="flex-1 p-6 ml-64 mt-12 relative z-10">
+        <main className="flex-1 p-8 ml-64 mt-10 relative z-10">
           <div className="animate-fade-in">
             {children}
           </div>

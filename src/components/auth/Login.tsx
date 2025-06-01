@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
+import { Shield, Users, Eye, BookOpen } from 'lucide-react';
 
 interface LoginProps {
   onLogin: (user: any) => void;
@@ -29,28 +30,28 @@ const Login = ({ onLogin }: LoginProps) => {
       email: 'admin@cfm.ofppt.ma', 
       password: 'Adm#8rP!29Ws@ZqK',
       color: 'from-red-500 to-red-600',
-      icon: '👑'
+      icon: Shield
     },
     { 
       role: 'Directeur', 
       email: 'directeur@cfm.ofppt.ma', 
       password: 'Dir$9Kf&51Lu^MxT',
       color: 'from-purple-500 to-purple-600',
-      icon: '🎯'
+      icon: Users
     },
     { 
       role: 'Surveillant', 
       email: 'surveillant@cfm.ofppt.ma', 
       password: 'Surv!4Mn*86Qa&Bv',
       color: 'from-green-500 to-green-600',
-      icon: '👮'
+      icon: Eye
     },
     { 
       role: 'Formateur', 
       email: 'formateur@cfm.ofppt.ma', 
       password: 'Form@6Vz!32Jr#Lc',
       color: 'from-blue-500 to-blue-600',
-      icon: '👨‍🏫'
+      icon: BookOpen
     }
   ];
 
@@ -128,7 +129,7 @@ const Login = ({ onLogin }: LoginProps) => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width=%2260%22%20height=%2260%22%20viewBox=%220%200%2060%2060%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg%20fill=%22none%22%20fill-rule=%22evenodd%22%3E%3Cg%20fill=%22%239C92AC%22%20fill-opacity=%220.05%22%3E%3Ccircle%20cx=%2230%22%20cy=%2230%22%20r=%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
       
-      <div className="w-full max-w-4xl relative">
+      <div className="w-full max-w-5xl relative space-y-12">
         <Card className="w-full max-w-md mx-auto bg-slate-800/50 backdrop-blur-xl border-blue-500/20 shadow-2xl">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg"></div>
           <CardHeader className="text-center relative z-10 pb-8">
@@ -209,18 +210,21 @@ const Login = ({ onLogin }: LoginProps) => {
             Connexion Rapide
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {quickLoginCredentials.map((credential) => (
-              <Button
-                key={credential.role}
-                onClick={() => handleQuickLogin(credential)}
-                disabled={isLoading}
-                className={`bg-gradient-to-br ${credential.color} hover:scale-105 transform transition-all duration-300 p-8 h-auto flex flex-col items-center space-y-3 shadow-lg hover:shadow-xl border border-white/10 rounded-xl`}
-              >
-                <span className="text-3xl">{credential.icon}</span>
-                <span className="font-semibold text-white text-lg">{credential.role}</span>
-                <span className="text-xs text-white/80">Connexion directe</span>
-              </Button>
-            ))}
+            {quickLoginCredentials.map((credential) => {
+              const Icon = credential.icon;
+              return (
+                <Button
+                  key={credential.role}
+                  onClick={() => handleQuickLogin(credential)}
+                  disabled={isLoading}
+                  className={`bg-gradient-to-br ${credential.color} hover:scale-105 transform transition-all duration-300 p-8 h-auto flex flex-col items-center space-y-4 shadow-lg hover:shadow-xl border border-white/10 rounded-xl`}
+                >
+                  <Icon className="w-8 h-8 text-white" />
+                  <span className="font-semibold text-white text-lg">{credential.role}</span>
+                  <span className="text-xs text-white/80">Connexion directe</span>
+                </Button>
+              );
+            })}
           </div>
         </div>
 

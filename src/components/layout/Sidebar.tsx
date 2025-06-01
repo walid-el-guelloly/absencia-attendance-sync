@@ -8,7 +8,8 @@ import {
   ClipboardCheck,
   Settings,
   BarChart3,
-  Info
+  Info,
+  ExternalLink
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -64,9 +65,9 @@ const Sidebar = ({ user }: SidebarProps) => {
   };
 
   return (
-    <aside className="fixed left-0 top-12 bottom-0 w-64 bg-slate-800/50 backdrop-blur-xl border-r border-blue-500/20 z-40">
-      <nav className="p-4 space-y-2">
-        <div className="mb-4">
+    <aside className="fixed left-0 top-10 bottom-0 w-64 bg-slate-800/50 backdrop-blur-xl border-r border-blue-500/20 z-40 flex flex-col">
+      <nav className="p-4 space-y-2 flex-1">
+        <div className="mb-6">
           <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">
             Navigation
           </h2>
@@ -110,12 +111,37 @@ const Sidebar = ({ user }: SidebarProps) => {
           );
         })}
         
-        <div className="pt-4 mt-4 border-t border-slate-700">
+        <div className="pt-6 mt-6 border-t border-slate-700">
           <div className="text-xs text-slate-500 text-center">
             <p>Rôle: <span className="text-blue-400 font-medium capitalize">{user.role}</span></p>
           </div>
         </div>
       </nav>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-slate-700 space-y-3">
+        <div className="text-center">
+          <div className="flex items-center justify-center space-x-2 mb-2">
+            <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded flex items-center justify-center">
+              <span className="text-white text-xs font-bold">T</span>
+            </div>
+            <span className="text-slate-300 font-semibold text-sm">TechSol</span>
+          </div>
+          <p className="text-slate-500 text-xs">Développé par TechSol</p>
+        </div>
+        
+        <div className="flex justify-center">
+          <a
+            href="https://www.linkedin.com/in/guewalid/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-1 text-slate-400 hover:text-blue-400 transition-colors duration-200 text-xs"
+          >
+            <span>Privacy</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      </div>
     </aside>
   );
 };
