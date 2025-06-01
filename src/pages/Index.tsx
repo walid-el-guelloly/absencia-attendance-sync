@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../components/auth/Login';
 import Dashboard from '../components/dashboard/Dashboard';
 import StudentManagement from '../components/students/StudentManagement';
@@ -52,25 +52,23 @@ const Index = () => {
   }
 
   return (
-    <Router>
-      <Layout user={user} onLogout={handleLogout}>
-        <Routes>
-          <Route path="/" element={<Dashboard user={user} />} />
-          {(user.role === 'admin' || user.role === 'directeur' || user.role === 'surveillant') && (
-            <>
-              <Route path="/students" element={<StudentManagement />} />
-              <Route path="/absence-admin" element={<AbsenceAdmin />} />
-              <Route path="/statistics" element={<Statistics />} />
-            </>
-          )}
-          {user.role === 'formateur' && (
-            <Route path="/absence-entry" element={<AbsenceEntry user={user} />} />
-          )}
-          <Route path="/about" element={<About />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <Layout user={user} onLogout={handleLogout}>
+      <Routes>
+        <Route path="/" element={<Dashboard user={user} />} />
+        {(user.role === 'admin' || user.role === 'directeur' || user.role === 'surveillant') && (
+          <>
+            <Route path="/students" element={<StudentManagement />} />
+            <Route path="/absence-admin" element={<AbsenceAdmin />} />
+            <Route path="/statistics" element={<Statistics />} />
+          </>
+        )}
+        {user.role === 'formateur' && (
+          <Route path="/absence-entry" element={<AbsenceEntry user={user} />} />
+        )}
+        <Route path="/about" element={<About />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Layout>
   );
 };
 
