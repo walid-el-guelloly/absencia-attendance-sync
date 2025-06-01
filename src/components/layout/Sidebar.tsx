@@ -59,14 +59,15 @@ const Sidebar = ({ user }: SidebarProps) => {
   ];
 
   const handleNavigation = (path: string) => {
+    console.log('Navigation vers:', path);
     navigate(path);
   };
 
   return (
-    <aside className="fixed left-0 top-16 bottom-0 w-64 bg-slate-800/50 backdrop-blur-xl border-r border-blue-500/20 z-40">
-      <nav className="p-6 space-y-3">
-        <div className="mb-6">
-          <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-4">
+    <aside className="fixed left-0 top-12 bottom-0 w-64 bg-slate-800/50 backdrop-blur-xl border-r border-blue-500/20 z-40">
+      <nav className="p-4 space-y-2">
+        <div className="mb-4">
+          <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">
             Navigation
           </h2>
         </div>
@@ -79,10 +80,17 @@ const Sidebar = ({ user }: SidebarProps) => {
           return (
             <button
               key={item.path}
-              onClick={() => isAccessible && handleNavigation(item.path)}
+              onClick={() => {
+                if (isAccessible) {
+                  console.log(`Navigating to ${item.path} for role ${user.role}`);
+                  handleNavigation(item.path);
+                } else {
+                  console.log(`Access denied to ${item.path} for role ${user.role}`);
+                }
+              }}
               disabled={!isAccessible}
               className={cn(
-                "w-full flex items-center space-x-4 px-4 py-4 rounded-xl transition-all duration-300 text-left group",
+                "w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-300 text-left group",
                 isActive && isAccessible
                   ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-white shadow-lg"
                   : isAccessible
@@ -91,10 +99,10 @@ const Sidebar = ({ user }: SidebarProps) => {
               )}
             >
               <Icon className={cn(
-                "w-5 h-5 transition-colors",
+                "w-4 h-4 transition-colors",
                 isActive && isAccessible ? "text-blue-400" : "group-hover:text-blue-400"
               )} />
-              <span className="font-medium">{item.label}</span>
+              <span className="font-medium text-sm">{item.label}</span>
               {!isAccessible && (
                 <div className="ml-auto w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               )}
@@ -102,9 +110,9 @@ const Sidebar = ({ user }: SidebarProps) => {
           );
         })}
         
-        <div className="pt-6 mt-6 border-t border-slate-700">
+        <div className="pt-4 mt-4 border-t border-slate-700">
           <div className="text-xs text-slate-500 text-center">
-            <p>Rôle actuel: <span className="text-blue-400 font-medium capitalize">{user.role}</span></p>
+            <p>Rôle: <span className="text-blue-400 font-medium capitalize">{user.role}</span></p>
           </div>
         </div>
       </nav>
