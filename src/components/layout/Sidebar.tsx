@@ -58,19 +58,19 @@ const Sidebar = ({ user }: SidebarProps) => {
     }
   ];
 
-  const filteredMenuItems = menuItems.filter(item => 
-    item.roles.includes(user.role)
-  );
-
-  const handleNavigation = (path: string, roles: string[]) => {
-    if (roles.includes(user.role)) {
-      navigate(path);
-    }
+  const handleNavigation = (path: string) => {
+    navigate(path);
   };
 
   return (
     <aside className="fixed left-0 top-16 bottom-0 w-64 bg-slate-800/50 backdrop-blur-xl border-r border-blue-500/20 z-40">
-      <nav className="p-4 space-y-2">
+      <nav className="p-6 space-y-3">
+        <div className="mb-6">
+          <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-4">
+            Navigation
+          </h2>
+        </div>
+        
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -79,29 +79,34 @@ const Sidebar = ({ user }: SidebarProps) => {
           return (
             <button
               key={item.path}
-              onClick={() => handleNavigation(item.path, item.roles)}
+              onClick={() => isAccessible && handleNavigation(item.path)}
               disabled={!isAccessible}
               className={cn(
-                "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 text-left",
+                "w-full flex items-center space-x-4 px-4 py-4 rounded-xl transition-all duration-300 text-left group",
                 isActive && isAccessible
                   ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-white shadow-lg"
                   : isAccessible
-                  ? "text-slate-300 hover:text-white hover:bg-slate-700/50 hover:border-slate-600"
-                  : "text-slate-500 cursor-not-allowed opacity-50",
-                "border border-transparent"
+                  ? "text-slate-300 hover:text-white hover:bg-slate-700/50 hover:border-slate-600 border border-transparent"
+                  : "text-slate-500 cursor-not-allowed opacity-50 border border-transparent",
               )}
             >
               <Icon className={cn(
-                "w-5 h-5",
-                isActive && isAccessible ? "text-blue-400" : ""
+                "w-5 h-5 transition-colors",
+                isActive && isAccessible ? "text-blue-400" : "group-hover:text-blue-400"
               )} />
               <span className="font-medium">{item.label}</span>
-              {!isAccessible && user.role === 'formateur' && (
-                <div className="ml-auto w-2 h-2 bg-red-500 rounded-full"></div>
+              {!isAccessible && (
+                <div className="ml-auto w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               )}
             </button>
           );
         })}
+        
+        <div className="pt-6 mt-6 border-t border-slate-700">
+          <div className="text-xs text-slate-500 text-center">
+            <p>Rôle actuel: <span className="text-blue-400 font-medium capitalize">{user.role}</span></p>
+          </div>
+        </div>
       </nav>
     </aside>
   );

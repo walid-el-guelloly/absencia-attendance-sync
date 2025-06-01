@@ -84,7 +84,7 @@ const Login = ({ onLogin }: LoginProps) => {
 
     toast({
       title: "Connexion réussie",
-      description: `Bienvenue dans Absencia !`
+      description: `Bienvenue dans Absenta !`
     });
 
     onLogin({
@@ -131,52 +131,55 @@ const Login = ({ onLogin }: LoginProps) => {
       <div className="w-full max-w-4xl relative">
         <Card className="w-full max-w-md mx-auto bg-slate-800/50 backdrop-blur-xl border-blue-500/20 shadow-2xl">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg"></div>
-          <CardHeader className="text-center relative z-10">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
-              <span className="text-2xl font-bold text-white">A</span>
+          <CardHeader className="text-center relative z-10 pb-8">
+            <div className="mx-auto w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-2xl">
+              <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/>
+                <path d="M8 11l2 2 4-4" stroke="white" strokeWidth="2" fill="none"/>
+              </svg>
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Absencia
+            <CardTitle className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+              Absenta
             </CardTitle>
-            <p className="text-slate-400">Gestion des absences - CFM OFPPT</p>
+            <p className="text-slate-400 text-lg">Gestion des absences - CFM OFPPT</p>
           </CardHeader>
           
-          <CardContent className="relative z-10">
+          <CardContent className="relative z-10 px-8 pb-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-300">Email</Label>
+              <div className="space-y-3">
+                <Label htmlFor="email" className="text-slate-300 text-sm font-medium">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-400"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-400 h-11"
                   placeholder="votre.email@cfm.ofppt.ma"
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-300">Mot de passe</Label>
+              <div className="space-y-3">
+                <Label htmlFor="password" className="text-slate-300 text-sm font-medium">Mot de passe</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-400"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-400 h-11"
                 />
               </div>
               
               {email === 'formateur@cfm.ofppt.ma' && (
-                <div className="space-y-2">
-                  <Label htmlFor="username" className="text-slate-300">Nom d'utilisateur</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="username" className="text-slate-300 text-sm font-medium">Nom d'utilisateur</Label>
                   <Input
                     id="username"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-400"
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-400 h-11"
                     placeholder="Votre nom d'utilisateur"
                   />
                 </div>
@@ -185,11 +188,11 @@ const Login = ({ onLogin }: LoginProps) => {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 transition-all duration-300 transform hover:scale-[1.02]"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 h-12 transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
               >
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                     <span>Connexion...</span>
                   </div>
                 ) : (
@@ -201,20 +204,20 @@ const Login = ({ onLogin }: LoginProps) => {
         </Card>
 
         {/* Connexion rapide */}
-        <div className="mt-8">
-          <h3 className="text-center text-xl font-semibold text-white mb-6">
+        <div className="mt-12">
+          <h3 className="text-center text-xl font-semibold text-white mb-8">
             Connexion Rapide
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {quickLoginCredentials.map((credential) => (
               <Button
                 key={credential.role}
                 onClick={() => handleQuickLogin(credential)}
                 disabled={isLoading}
-                className={`bg-gradient-to-br ${credential.color} hover:scale-105 transform transition-all duration-300 p-6 h-auto flex flex-col items-center space-y-2 shadow-lg hover:shadow-xl border border-white/10`}
+                className={`bg-gradient-to-br ${credential.color} hover:scale-105 transform transition-all duration-300 p-8 h-auto flex flex-col items-center space-y-3 shadow-lg hover:shadow-xl border border-white/10 rounded-xl`}
               >
-                <span className="text-2xl">{credential.icon}</span>
-                <span className="font-semibold text-white">{credential.role}</span>
+                <span className="text-3xl">{credential.icon}</span>
+                <span className="font-semibold text-white text-lg">{credential.role}</span>
                 <span className="text-xs text-white/80">Connexion directe</span>
               </Button>
             ))}
@@ -222,11 +225,11 @@ const Login = ({ onLogin }: LoginProps) => {
         </div>
 
         {/* Informations de démonstration */}
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           <Card className="bg-slate-800/30 backdrop-blur border-slate-600/30">
-            <CardContent className="p-4">
-              <p className="text-slate-400 text-sm mb-2"><strong>Informations de démo :</strong></p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-500">
+            <CardContent className="p-6">
+              <p className="text-slate-400 text-sm mb-4"><strong>Informations de démo :</strong></p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-500">
                 <p>Admin: admin@cfm.ofppt.ma</p>
                 <p>Directeur: directeur@cfm.ofppt.ma</p>
                 <p>Surveillant: surveillant@cfm.ofppt.ma</p>
