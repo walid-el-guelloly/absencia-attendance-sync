@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { Shield, Users, Eye, BookOpen } from 'lucide-react';
 
@@ -16,6 +17,9 @@ const Login = ({ onLogin }: LoginProps) => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showNameDialog, setShowNameDialog] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [fullName, setFullName] = useState('');
 
   const credentials = {
     'admin@cfm.ofppt.ma': { password: 'Adm#8rP!29Ws@ZqK', role: 'admin' },
@@ -91,38 +95,46 @@ const Login = ({ onLogin }: LoginProps) => {
     onLogin({
       email,
       role: userCreds.role,
-      username: userCreds.role === 'formateur' ? username : email.split('@')[0]
+      username: userCreds.role === 'formateur' ? username : email.split('@')[0],
+      fullName: username || email.split('@')[0]
     });
 
     setIsLoading(false);
   };
 
   const handleQuickLogin = async (credential: any) => {
+    setSelectedRole(credential);
+    setShowNameDialog(true);
+  };
+
+  const handleNameSubmit = async () => {
+    if (!fullName.trim()) {
+      toast({
+        title: "Nom requis",
+        description: "Veuillez saisir votre nom complet",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
-    
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    if (credential.role === 'Formateur') {
-      const defaultUsername = `Formateur_${Date.now()}`;
-      onLogin({
-        email: credential.email,
-        role: 'formateur',
-        username: defaultUsername
-      });
-    } else {
-      onLogin({
-        email: credential.email,
-        role: credential.role.toLowerCase(),
-        username: credential.email.split('@')[0]
-      });
-    }
+    onLogin({
+      email: selectedRole.email,
+      role: selectedRole.role.toLowerCase(),
+      username: selectedRole.email.split('@')[0],
+      fullName: fullName.trim()
+    });
 
     toast({
       title: "Connexion rapide réussie",
-      description: `Connecté en tant que ${credential.role}`
+      description: `Connecté en tant que ${selectedRole.role}`
     });
 
     setIsLoading(false);
+    setShowNameDialog(false);
+    setFullName('');
   };
 
   return (
@@ -243,6 +255,60 @@ const Login = ({ onLogin }: LoginProps) => {
           </Card>
         </div>
       </div>
+
+      {/* Dialog pour saisir le nom complet */}
+      <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
+        <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Saisir votre nom complet
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="text-center mb-4">
+              <p className="text-slate-400">
+                Connexion en tant que <span className="text-blue-400 font-semibold">{selectedRole?.role}</span>
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="fullName" className="text-slate-300 text-sm font-medium">Nom complet</Label>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-400 mt-2"
+                placeholder="Ex: Mohammed Alami"
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowNameDialog(false)}
+                className="border-slate-600 text-slate-300"
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handleNameSubmit}
+                disabled={isLoading || !fullName.trim()}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              >
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Connexion...</span>
+                  </div>
+                ) : (
+                  'Se connecter'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

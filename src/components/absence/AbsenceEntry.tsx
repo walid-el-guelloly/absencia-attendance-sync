@@ -27,16 +27,34 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
   }, []);
 
   const loadData = () => {
-    setFilieres(studentStorage.getFilieres());
-    setClasses(studentStorage.getClasses());
-    setStudents(studentStorage.getStudents());
+    console.log('Chargement des données...');
+    const filieresData = studentStorage.getFilieres();
+    const classesData = studentStorage.getClasses();
+    const studentsData = studentStorage.getStudents();
+    
+    console.log('Filières chargées:', filieresData);
+    console.log('Classes chargées:', classesData);
+    console.log('Stagiaires chargés:', studentsData);
+    
+    setFilieres(filieresData);
+    setClasses(classesData);
+    setStudents(studentsData);
   };
 
   useEffect(() => {
     if (selectedFiliere) {
       setSelectedClasse('');
+      console.log('Filière sélectionnée:', selectedFiliere);
     }
   }, [selectedFiliere]);
+
+  useEffect(() => {
+    if (selectedClasse) {
+      console.log('Classe sélectionnée:', selectedClasse);
+      const classeStudents = students.filter(s => s.classeId === selectedClasse && s.statut === 'actif');
+      console.log('Stagiaires de la classe:', classeStudents);
+    }
+  }, [selectedClasse, students]);
 
   const filteredClasses = classes.filter(c => c.filiereId === selectedFiliere);
   const classeStudents = students.filter(s => s.classeId === selectedClasse && s.statut === 'actif');
@@ -111,6 +129,8 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
       title: "Absences enregistrées",
       description: `${savedCount} absence(s) ont été enregistrées et envoyées pour validation`
     });
+
+    console.log('Absences sauvegardées:', savedCount);
   };
 
   return (
@@ -125,6 +145,15 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
           <p className="text-white font-semibold">{user.fullName || user.username}</p>
         </div>
       </div>
+
+      {/* Section de debug pour vérifier les données */}
+      <Card className="bg-slate-800/50 backdrop-blur-xl border-yellow-500/20">
+        <CardContent className="p-4">
+          <p className="text-yellow-400 text-sm">
+            Debug: {filieres.length} filières, {classes.length} classes, {students.length} stagiaires chargés
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Selection Form */}
       <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
@@ -210,7 +239,14 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
             {classeStudents.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-400">Aucun stagiaire actif dans cette classe</p>
+                <p className="text-slate-400">
+                  Aucun stagiaire actif dans cette classe
+                  {selectedClasse && (
+                    <span className="block text-sm mt-2 text-yellow-400">
+                      Classe ID: {selectedClasse}
+                    </span>
+                  )}
+                </p>
               </div>
             ) : (
               <div className="space-y-4">

@@ -28,95 +28,147 @@ const StudentManagement = () => {
   const [selectedStudentObj, setSelectedStudentObj] = useState<Student | null>(null);
 
   useEffect(() => {
+    console.log('Initialisation du composant StudentManagement');
     studentStorage.initializeDefaultData();
     loadData();
   }, []);
 
   const loadData = () => {
-    setFilieres(studentStorage.getFilieres());
-    setClasses(studentStorage.getClasses());
-    setStudents(studentStorage.getStudents());
+    console.log('Chargement des données dans StudentManagement');
+    const filieresData = studentStorage.getFilieres();
+    const classesData = studentStorage.getClasses();
+    const studentsData = studentStorage.getStudents();
+    
+    console.log('Données chargées:', { filieresData, classesData, studentsData });
+    
+    setFilieres(filieresData);
+    setClasses(classesData);
+    setStudents(studentsData);
   };
 
   const openDialog = (type: 'filiere' | 'classe' | 'student', item?: any) => {
+    console.log('Ouverture du dialog:', type, item);
     setDialogType(type);
     setEditingItem(item || null);
     setIsDialogOpen(true);
   };
 
   const handleSaveFiliere = (data: any) => {
-    if (editingItem) {
-      studentStorage.updateFiliere(editingItem.id, data);
-      toast({ title: "Filière modifiée", description: "La filière a été mise à jour avec succès" });
-    } else {
-      studentStorage.addFiliere(data);
-      toast({ title: "Filière ajoutée", description: "La nouvelle filière a été créée avec succès" });
+    console.log('Sauvegarde filière:', data);
+    try {
+      if (editingItem) {
+        studentStorage.updateFiliere(editingItem.id, data);
+        toast({ title: "Filière modifiée", description: "La filière a été mise à jour avec succès" });
+      } else {
+        studentStorage.addFiliere(data);
+        toast({ title: "Filière ajoutée", description: "La nouvelle filière a été créée avec succès" });
+      }
+      loadData();
+      setIsDialogOpen(false);
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de la filière:', error);
+      toast({ 
+        title: "Erreur", 
+        description: "Une erreur est survenue lors de la sauvegarde",
+        variant: "destructive" 
+      });
     }
-    loadData();
-    setIsDialogOpen(false);
   };
 
   const handleSaveClasse = (data: any) => {
-    if (editingItem) {
-      studentStorage.updateClasse(editingItem.id, data);
-      toast({ title: "Classe modifiée", description: "La classe a été mise à jour avec succès" });
-    } else {
-      studentStorage.addClass(data);
-      toast({ title: "Classe ajoutée", description: "La nouvelle classe a été créée avec succès" });
+    console.log('Sauvegarde classe:', data);
+    try {
+      if (editingItem) {
+        studentStorage.updateClasse(editingItem.id, data);
+        toast({ title: "Classe modifiée", description: "La classe a été mise à jour avec succès" });
+      } else {
+        studentStorage.addClass(data);
+        toast({ title: "Classe ajoutée", description: "La nouvelle classe a été créée avec succès" });
+      }
+      loadData();
+      setIsDialogOpen(false);
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de la classe:', error);
+      toast({ 
+        title: "Erreur", 
+        description: "Une erreur est survenue lors de la sauvegarde",
+        variant: "destructive" 
+      });
     }
-    loadData();
-    setIsDialogOpen(false);
   };
 
   const handleSaveStudent = (data: any) => {
-    if (editingItem) {
-      studentStorage.updateStudent(editingItem.id, data);
-      toast({ title: "Stagiaire modifié", description: "Le stagiaire a été mis à jour avec succès" });
-    } else {
-      studentStorage.addStudent(data);
-      toast({ title: "Stagiaire ajouté", description: "Le nouveau stagiaire a été créé avec succès" });
+    console.log('Sauvegarde stagiaire:', data);
+    try {
+      if (editingItem) {
+        studentStorage.updateStudent(editingItem.id, data);
+        toast({ title: "Stagiaire modifié", description: "Le stagiaire a été mis à jour avec succès" });
+      } else {
+        studentStorage.addStudent(data);
+        toast({ title: "Stagiaire ajouté", description: "Le nouveau stagiaire a été créé avec succès" });
+      }
+      loadData();
+      setIsDialogOpen(false);
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde du stagiaire:', error);
+      toast({ 
+        title: "Erreur", 
+        description: "Une erreur est survenue lors de la sauvegarde",
+        variant: "destructive" 
+      });
     }
-    loadData();
-    setIsDialogOpen(false);
   };
 
   const handleDelete = (type: 'filiere' | 'classe' | 'student', id: string) => {
+    console.log('Tentative de suppression:', type, id);
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
-      switch (type) {
-        case 'filiere':
-          // Check if filiere has classes
-          const filiereClasses = classes.filter(c => c.filiereId === id);
-          if (filiereClasses.length > 0) {
-            toast({ 
-              title: "Suppression impossible", 
-              description: "Cette filière contient des classes. Supprimez d'abord les classes.",
-              variant: "destructive" 
-            });
-            return;
-          }
-          studentStorage.deleteFiliere(id);
-          toast({ title: "Filière supprimée", variant: "destructive" });
-          break;
-        case 'classe':
-          // Check if classe has students
-          const classeStudents = students.filter(s => s.classeId === id);
-          if (classeStudents.length > 0) {
-            toast({ 
-              title: "Suppression impossible", 
-              description: "Cette classe contient des stagiaires. Supprimez d'abord les stagiaires.",
-              variant: "destructive" 
-            });
-            return;
-          }
-          studentStorage.deleteClasse(id);
-          toast({ title: "Classe supprimée", variant: "destructive" });
-          break;
-        case 'student':
-          studentStorage.deleteStudent(id);
-          toast({ title: "Stagiaire supprimé", variant: "destructive" });
-          break;
+      try {
+        switch (type) {
+          case 'filiere':
+            // Check if filiere has classes
+            const filiereClasses = classes.filter(c => c.filiereId === id);
+            if (filiereClasses.length > 0) {
+              toast({ 
+                title: "Suppression impossible", 
+                description: "Cette filière contient des classes. Supprimez d'abord les classes.",
+                variant: "destructive" 
+              });
+              return;
+            }
+            studentStorage.deleteFiliere(id);
+            toast({ title: "Filière supprimée", variant: "destructive" });
+            break;
+          case 'classe':
+            // Check if classe has students
+            const classeStudents = students.filter(s => s.classeId === id);
+            if (classeStudents.length > 0) {
+              toast({ 
+                title: "Suppression impossible", 
+                description: "Cette classe contient des stagiaires. Supprimez d'abord les stagiaires.",
+                variant: "destructive" 
+              });
+              return;
+            }
+            studentStorage.deleteClasse(id);
+            toast({ title: "Classe supprimée", variant: "destructive" });
+            break;
+          case 'student':
+            studentStorage.deleteStudent(id);
+            toast({ title: "Stagiaire supprimé", variant: "destructive" });
+            break;
+        }
+        loadData();
+      } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+        toast({ 
+          title: "Erreur", 
+          description: "Une erreur est survenue lors de la suppression",
+          variant: "destructive" 
+        });
       }
-      loadData();
     }
   };
 
@@ -131,16 +183,19 @@ const StudentManagement = () => {
 
   // Navigation handlers
   const handleViewFiliere = (filiere: Filiere) => {
+    console.log('Affichage filière:', filiere);
     setSelectedFiliereObj(filiere);
     setCurrentView('filiere');
   };
 
   const handleViewClasse = (classe: Classe) => {
+    console.log('Affichage classe:', classe);
     setSelectedClasseObj(classe);
     setCurrentView('classe');
   };
 
   const handleViewStudent = (student: Student) => {
+    console.log('Affichage stagiaire:', student);
     setSelectedStudentObj(student);
     setCurrentView('student');
   };
@@ -164,7 +219,17 @@ const StudentManagement = () => {
     const classe = classes.find(c => c.id === student.classeId);
     const filiere = filieres.find(f => f.id === classe?.filiereId);
     
-    if (!classe || !filiere) return null;
+    if (!classe || !filiere) {
+      console.error('Classe ou filière non trouvée pour le stagiaire:', student);
+      return (
+        <div className="text-center py-12">
+          <p className="text-red-400">Erreur: Données manquantes pour ce stagiaire</p>
+          <Button onClick={handleBackToOverview} className="mt-4">
+            Retour à l'aperçu
+          </Button>
+        </div>
+      );
+    }
     
     return (
       <StudentDetails
@@ -181,7 +246,17 @@ const StudentManagement = () => {
     const classe = selectedClasseObj;
     const filiere = filieres.find(f => f.id === classe.filiereId);
     
-    if (!filiere) return null;
+    if (!filiere) {
+      console.error('Filière non trouvée pour la classe:', classe);
+      return (
+        <div className="text-center py-12">
+          <p className="text-red-400">Erreur: Filière non trouvée pour cette classe</p>
+          <Button onClick={handleBackToOverview} className="mt-4">
+            Retour à l'aperçu
+          </Button>
+        </div>
+      );
+    }
     
     return (
       <ClasseView
@@ -266,6 +341,15 @@ const StudentManagement = () => {
         </CardContent>
       </Card>
 
+      {/* Debug info */}
+      <Card className="bg-slate-800/50 backdrop-blur-xl border-yellow-500/20">
+        <CardContent className="p-4">
+          <p className="text-yellow-400 text-sm">
+            Debug: {filieres.length} filières, {classes.length} classes, {students.length} stagiaires
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Filières Overview */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -287,13 +371,37 @@ const StudentManagement = () => {
                       <BookOpen className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex space-x-1">
-                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleViewFiliere(filiere); }} className="text-green-400 hover:text-green-300 h-8 w-8 p-0">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          handleViewFiliere(filiere); 
+                        }} 
+                        className="text-green-400 hover:text-green-300 h-8 w-8 p-0"
+                      >
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openDialog('filiere', filiere); }} className="text-blue-400 hover:text-blue-300 h-8 w-8 p-0">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          openDialog('filiere', filiere); 
+                        }} 
+                        className="text-blue-400 hover:text-blue-300 h-8 w-8 p-0"
+                      >
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleDelete('filiere', filiere.id); }} className="text-red-400 hover:text-red-300 h-8 w-8 p-0">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          handleDelete('filiere', filiere.id); 
+                        }} 
+                        className="text-red-400 hover:text-red-300 h-8 w-8 p-0"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -318,7 +426,10 @@ const StudentManagement = () => {
       {/* Dialog for adding/editing */}
       <FormDialog
         isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setEditingItem(null);
+        }}
         type={dialogType}
         editingItem={editingItem}
         filieres={filieres}
@@ -339,12 +450,29 @@ const FormDialog = ({ isOpen, onClose, type, editingItem, filieres, classes, onS
     if (editingItem) {
       setFormData(editingItem);
     } else {
-      setFormData({});
+      setFormData(
+        type === 'student' ? { statut: 'actif' } : {}
+      );
     }
-  }, [editingItem, type]);
+  }, [editingItem, type, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation
+    if (type === 'filiere' && (!formData.code || !formData.nom)) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+    if (type === 'classe' && (!formData.nom || !formData.filiereId || !formData.niveau)) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+    if (type === 'student' && (!formData.nom || !formData.prenom || !formData.email || !formData.classeId || !formData.sexe)) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
     switch (type) {
       case 'filiere':
         onSaveFiliere(formData);
@@ -364,21 +492,23 @@ const FormDialog = ({ isOpen, onClose, type, editingItem, filieres, classes, onS
         return (
           <div className="space-y-4">
             <div>
-              <label className="text-slate-300 text-sm font-medium mb-2 block">Code</label>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Code *</label>
               <Input
                 value={formData.code || ''}
                 onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                 className="bg-slate-700/50 border-slate-600 text-white"
                 placeholder="TSDI"
+                required
               />
             </div>
             <div>
-              <label className="text-slate-300 text-sm font-medium mb-2 block">Nom</label>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Nom *</label>
               <Input
                 value={formData.nom || ''}
                 onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
                 className="bg-slate-700/50 border-slate-600 text-white"
                 placeholder="Techniques Spécialisées..."
+                required
               />
             </div>
             <div>
@@ -397,7 +527,7 @@ const FormDialog = ({ isOpen, onClose, type, editingItem, filieres, classes, onS
         return (
           <div className="space-y-4">
             <div>
-              <label className="text-slate-300 text-sm font-medium mb-2 block">Filière</label>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Filière *</label>
               <Select value={formData.filiereId || ''} onValueChange={(value) => setFormData({ ...formData, filiereId: value })}>
                 <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                   <SelectValue placeholder="Choisir une filière" />
@@ -412,17 +542,18 @@ const FormDialog = ({ isOpen, onClose, type, editingItem, filieres, classes, onS
               </Select>
             </div>
             <div>
-              <label className="text-slate-300 text-sm font-medium mb-2 block">Nom</label>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Nom *</label>
               <Input
                 value={formData.nom || ''}
                 onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
                 className="bg-slate-700/50 border-slate-600 text-white"
                 placeholder="TSDI 1ère année"
+                required
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Niveau</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Niveau *</label>
                 <Select value={formData.niveau || ''} onValueChange={(value) => setFormData({ ...formData, niveau: value })}>
                   <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                     <SelectValue placeholder="Niveau" />
@@ -451,37 +582,40 @@ const FormDialog = ({ isOpen, onClose, type, editingItem, filieres, classes, onS
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Prénom</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Prénom *</label>
                 <Input
                   value={formData.prenom || ''}
                   onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
                   className="bg-slate-700/50 border-slate-600 text-white"
                   placeholder="Ahmed"
+                  required
                 />
               </div>
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Nom</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Nom *</label>
                 <Input
                   value={formData.nom || ''}
                   onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
                   className="bg-slate-700/50 border-slate-600 text-white"
                   placeholder="Benali"
+                  required
                 />
               </div>
             </div>
             <div>
-              <label className="text-slate-300 text-sm font-medium mb-2 block">Email</label>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Email *</label>
               <Input
                 value={formData.email || ''}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="bg-slate-700/50 border-slate-600 text-white"
                 placeholder="ahmed.benali@email.com"
                 type="email"
+                required
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Sexe</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Sexe *</label>
                 <Select value={formData.sexe || ''} onValueChange={(value) => setFormData({ ...formData, sexe: value })}>
                   <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                     <SelectValue placeholder="Sexe" />
@@ -493,7 +627,7 @@ const FormDialog = ({ isOpen, onClose, type, editingItem, filieres, classes, onS
                 </Select>
               </div>
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Classe</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Classe *</label>
                 <Select value={formData.classeId || ''} onValueChange={(value) => setFormData({ ...formData, classeId: value })}>
                   <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                     <SelectValue placeholder="Classe" />
