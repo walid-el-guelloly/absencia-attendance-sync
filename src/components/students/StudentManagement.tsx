@@ -1,13 +1,15 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, Plus, Search, Eye, Edit, Trash2, BookOpen, GraduationCap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { studentStorage, Filiere, Classe, Student } from '@/utils/studentStorage';
+import FiliereView from './FiliereView';
+import ClasseView from './ClasseView';
+import StudentDetails from './StudentDetails';
 
 const StudentManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,6 +20,12 @@ const StudentManagement = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'filiere' | 'classe' | 'student'>('filiere');
   const [editingItem, setEditingItem] = useState<any>(null);
+  
+  // Navigation states
+  const [currentView, setCurrentView] = useState<'overview' | 'filiere' | 'classe' | 'student'>('overview');
+  const [selectedFiliereObj, setSelectedFiliereObj] = useState<Filiere | null>(null);
+  const [selectedClasseObj, setSelectedClasseObj] = useState<Classe | null>(null);
+  const [selectedStudentObj, setSelectedStudentObj] = useState<Student | null>(null);
 
   useEffect(() => {
     studentStorage.initializeDefaultData();
@@ -76,10 +84,30 @@ const StudentManagement = () => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
       switch (type) {
         case 'filiere':
+          // Check if filiere has classes
+          const filiereClasses = classes.filter(c => c.filiereId === id);
+          if (filiereClasses.length > 0) {
+            toast({ 
+              title: "Suppression impossible", 
+              description: "Cette filière contient des classes. Supprimez d'abord les classes.",
+              variant: "destructive" 
+            });
+            return;
+          }
           studentStorage.deleteFiliere(id);
           toast({ title: "Filière supprimée", variant: "destructive" });
           break;
         case 'classe':
+          // Check if classe has students
+          const classeStudents = students.filter(s => s.classeId === id);
+          if (classeStudents.length > 0) {
+            toast({ 
+              title: "Suppression impossible", 
+              description: "Cette classe contient des stagiaires. Supprimez d'abord les stagiaires.",
+              variant: "destructive" 
+            });
+            return;
+          }
           studentStorage.deleteClasse(id);
           toast({ title: "Classe supprimée", variant: "destructive" });
           break;
@@ -101,6 +129,88 @@ const StudentManagement = () => {
     return matchesSearch && studentClasse?.filiereId === selectedFiliere;
   });
 
+  // Navigation handlers
+  const handleViewFiliere = (filiere: Filiere) => {
+    setSelectedFiliereObj(filiere);
+    setCurrentView('filiere');
+  };
+
+  const handleViewClasse = (classe: Classe) => {
+    setSelectedClasseObj(classe);
+    setCurrentView('classe');
+  };
+
+  const handleViewStudent = (student: Student) => {
+    setSelectedStudentObj(student);
+    setCurrentView('student');
+  };
+
+  const handleBackToOverview = () => {
+    setCurrentView('overview');
+    setSelectedFiliereObj(null);
+    setSelectedClasseObj(null);
+    setSelectedStudentObj(null);
+  };
+
+  const handleBackToFiliere = () => {
+    setCurrentView('filiere');
+    setSelectedClasseObj(null);
+    setSelectedStudentObj(null);
+  };
+
+  // Render different views
+  if (currentView === 'student' && selectedStudentObj) {
+    const student = selectedStudentObj;
+    const classe = classes.find(c => c.id === student.classeId);
+    const filiere = filieres.find(f => f.id === classe?.filiereId);
+    
+    if (!classe || !filiere) return null;
+    
+    return (
+      <StudentDetails
+        student={student}
+        classe={classe}
+        filiere={filiere}
+        onBack={selectedClasseObj ? handleBackToFiliere : handleBackToOverview}
+        onEdit={(student) => openDialog('student', student)}
+      />
+    );
+  }
+
+  if (currentView === 'classe' && selectedClasseObj) {
+    const classe = selectedClasseObj;
+    const filiere = filieres.find(f => f.id === classe.filiereId);
+    
+    if (!filiere) return null;
+    
+    return (
+      <ClasseView
+        classe={classe}
+        filiere={filiere}
+        students={students}
+        onBack={selectedFiliereObj ? () => setCurrentView('filiere') : handleBackToOverview}
+        onViewStudent={handleViewStudent}
+        onEditClasse={(classe) => openDialog('classe', classe)}
+        onEditStudent={(student) => openDialog('student', student)}
+        onDeleteStudent={(studentId) => handleDelete('student', studentId)}
+      />
+    );
+  }
+
+  if (currentView === 'filiere' && selectedFiliereObj) {
+    return (
+      <FiliereView
+        filiere={selectedFiliereObj}
+        classes={classes}
+        students={students}
+        onBack={handleBackToOverview}
+        onViewClasse={handleViewClasse}
+        onEditFiliere={(filiere) => openDialog('filiere', filiere)}
+      />
+    );
+  }
+
+  // Overview/main view
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -132,7 +242,7 @@ const StudentManagement = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <Input
-                  placeholder="Rechercher un stagiaire..."
+                  placeholder="Rechercher..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
@@ -170,27 +280,32 @@ const StudentManagement = () => {
             });
             
             return (
-              <Card key={filiere.id} className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 backdrop-blur-xl border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:scale-[1.02]">
+              <Card key={filiere.id} className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 backdrop-blur-xl border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:scale-[1.02] cursor-pointer">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                       <BookOpen className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex space-x-1">
-                      <Button variant="ghost" size="sm" onClick={() => openDialog('filiere', filiere)} className="text-blue-400 hover:text-blue-300 h-8 w-8 p-0">
+                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleViewFiliere(filiere); }} className="text-green-400 hover:text-green-300 h-8 w-8 p-0">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openDialog('filiere', filiere); }} className="text-blue-400 hover:text-blue-300 h-8 w-8 p-0">
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete('filiere', filiere.id)} className="text-red-400 hover:text-red-300 h-8 w-8 p-0">
+                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleDelete('filiere', filiere.id); }} className="text-red-400 hover:text-red-300 h-8 w-8 p-0">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
-                  <h3 className="text-white font-bold text-lg mb-1">{filiere.code}</h3>
-                  <p className="text-slate-400 text-sm mb-3 line-clamp-2">{filiere.nom}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs space-y-1">
-                      <div className="text-slate-300">{filiereClasses.length} classes</div>
-                      <div className="text-slate-300">{filiereStudents.length} stagiaires</div>
+                  <div onClick={() => handleViewFiliere(filiere)}>
+                    <h3 className="text-white font-bold text-lg mb-1">{filiere.code}</h3>
+                    <p className="text-slate-400 text-sm mb-3 line-clamp-2">{filiere.nom}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs space-y-1">
+                        <div className="text-slate-300">{filiereClasses.length} classes</div>
+                        <div className="text-slate-300">{filiereStudents.length} stagiaires</div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -198,115 +313,6 @@ const StudentManagement = () => {
             );
           })}
         </div>
-      </div>
-
-      {/* Classes List */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-white">Classes</h2>
-        </div>
-        <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
-          <CardContent className="p-6">
-            <div className="space-y-3">
-              {classes.map(classe => {
-                const filiere = filieres.find(f => f.id === classe.filiereId);
-                const classeStudents = students.filter(s => s.classeId === classe.id);
-                
-                return (
-                  <div key={classe.id} className="p-4 bg-slate-700/30 rounded-lg border border-slate-600 hover:bg-slate-700/50 transition-colors duration-200">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-white font-medium">{classe.nom}</h4>
-                        <p className="text-slate-400 text-sm">
-                          {filiere?.code} • Niveau {classe.niveau} • Session {classe.session}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <span className="text-white font-semibold">{classeStudents.length} stagiaires</span>
-                        <div className="flex space-x-1">
-                          <Button variant="ghost" size="sm" onClick={() => openDialog('classe', classe)} className="text-blue-400 hover:text-blue-300 h-8 w-8 p-0">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete('classe', classe.id)} className="text-red-400 hover:text-red-300 h-8 w-8 p-0">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Students Table */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-white">Stagiaires</h2>
-          <span className="text-slate-400">{filteredStudents.length} stagiaires</span>
-        </div>
-        <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
-          <CardContent className="p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-slate-600">
-                    <th className="text-left py-3 px-4 text-slate-300 font-medium">Nom</th>
-                    <th className="text-left py-3 px-4 text-slate-300 font-medium">Classe</th>
-                    <th className="text-left py-3 px-4 text-slate-300 font-medium">Email</th>
-                    <th className="text-center py-3 px-4 text-slate-300 font-medium">Statut</th>
-                    <th className="text-center py-3 px-4 text-slate-300 font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredStudents.map(student => {
-                    const studentClasse = classes.find(c => c.id === student.classeId);
-                    
-                    return (
-                      <tr key={student.id} className="border-b border-slate-700 hover:bg-slate-700/30 transition-colors duration-200">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center space-x-3">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${
-                              student.sexe === 'M' ? 'bg-blue-500' : 'bg-pink-500'
-                            }`}>
-                              {student.prenom[0]}{student.nom[0]}
-                            </div>
-                            <span className="text-white">{student.prenom} {student.nom}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-slate-300">{studentClasse?.nom}</td>
-                        <td className="py-3 px-4 text-slate-300">{student.email}</td>
-                        <td className="py-3 px-4 text-center">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            student.statut === 'actif' 
-                              ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                              : student.statut === 'inactif'
-                              ? 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
-                              : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                          }`}>
-                            {student.statut}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="flex justify-center space-x-1">
-                            <Button variant="ghost" size="sm" onClick={() => openDialog('student', student)} className="text-blue-400 hover:text-blue-300 h-8 w-8 p-0">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDelete('student', student.id)} className="text-red-400 hover:text-red-300 h-8 w-8 p-0">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Dialog for adding/editing */}

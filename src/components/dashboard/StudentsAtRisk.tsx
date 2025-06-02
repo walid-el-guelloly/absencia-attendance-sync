@@ -3,19 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, User, TrendingUp } from 'lucide-react';
 
 const StudentsAtRisk = () => {
-  // Mock data for students at risk - in real app this would come from absence data
+  // Stagiaires en alerte avec les nouveaux noms
   const studentsAtRisk = [
     {
       id: 1,
-      name: 'Mohammed Alami',
-      class: 'TSDI 2ème année',
+      name: 'Fahd Adouch',
+      class: 'Dev 101 1ème année',
       absences: 8,
       trend: 'up',
       risk: 'high'
     },
     {
       id: 2,
-      name: 'Youssef Bennani',
+      name: 'Ferdaouss Etaqi',
       class: 'TSRI 1ère année',
       absences: 6,
       trend: 'up',
@@ -23,7 +23,7 @@ const StudentsAtRisk = () => {
     },
     {
       id: 3,
-      name: 'Karim Idrissi',
+      name: 'Ayoub Lemguitaa',
       class: 'TDM 1ère année',
       absences: 5,
       trend: 'stable',
@@ -31,7 +31,7 @@ const StudentsAtRisk = () => {
     },
     {
       id: 4,
-      name: 'Omar Ziani',
+      name: 'Houssam Bahssi',
       class: 'TMSIR 1ère année',
       absences: 4,
       trend: 'down',

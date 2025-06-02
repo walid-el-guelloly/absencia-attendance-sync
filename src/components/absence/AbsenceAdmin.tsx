@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock, User, Calendar } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CheckCircle, XCircle, Clock, User, Calendar, FileText, Upload } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { studentStorage, Absence, Student, Classe, Filiere } from '@/utils/studentStorage';
 
@@ -13,6 +15,9 @@ const AbsenceAdmin = () => {
   const [classes, setClasses] = useState<Classe[]>([]);
   const [filieres, setFilieres] = useState<Filiere[]>([]);
   const [filter, setFilter] = useState<'all' | 'pending' | 'validated'>('pending');
+  const [isJustificationOpen, setIsJustificationOpen] = useState(false);
+  const [selectedAbsence, setSelectedAbsence] = useState<Absence | null>(null);
+  const [justificationText, setJustificationText] = useState('');
 
   useEffect(() => {
     loadData();
@@ -25,15 +30,40 @@ const AbsenceAdmin = () => {
     setFilieres(studentStorage.getFilieres());
   };
 
-  const handleValidateAbsence = (absenceId: string) => {
-    const validated = studentStorage.validateAbsence(absenceId, 'Surveillant');
-    if (validated) {
+  const handleValidateAbsence = (absenceId: string, justified: boolean = false) => {
+    if (justified && selectedAbsence) {
+      // Add justification logic here
+      const updatedAbsences = absences.map(abs => 
+        abs.id === absenceId 
+          ? { ...abs, validated: true, justification: justificationText }
+          : abs
+      );
+      studentStorage.saveAbsences(updatedAbsences);
+      
       toast({
-        title: "Absence validée",
-        description: "L'absence a été validée avec succès",
+        title: "Absence justifiée",
+        description: "L'absence a été validée avec justification",
       });
-      loadData();
+      
+      setIsJustificationOpen(false);
+      setJustificationText('');
+      setSelectedAbsence(null);
+    } else {
+      const validated = studentStorage.validateAbsence(absenceId, 'Surveillant');
+      if (validated) {
+        toast({
+          title: "Absence validée",
+          description: "L'absence a été validée avec succès",
+        });
+      }
     }
+    loadData();
+  };
+
+  const openJustificationDialog = (absence: Absence) => {
+    setSelectedAbsence(absence);
+    setJustificationText('');
+    setIsJustificationOpen(true);
   };
 
   const getStudentInfo = (studentId: string) => {
@@ -185,7 +215,7 @@ const AbsenceAdmin = () => {
                             </Badge>
                             {absence.validated ? (
                               <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/30">
-                                Validé
+                                {absence.justification ? 'Justifié' : 'Validé'}
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="border-orange-500/50 text-orange-400">
@@ -199,17 +229,33 @@ const AbsenceAdmin = () => {
                           <p className="text-slate-500 text-xs">
                             Par {absence.formateur}
                           </p>
+                          {absence.justification && (
+                            <p className="text-slate-300 text-xs mt-1 max-w-xs truncate">
+                              Justification: {absence.justification}
+                            </p>
+                          )}
                         </div>
                         
                         {!absence.validated && (
-                          <Button
-                            onClick={() => handleValidateAbsence(absence.id)}
-                            size="sm"
-                            className="bg-green-500 hover:bg-green-600 text-white"
-                          >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Valider
-                          </Button>
+                          <div className="flex space-x-2">
+                            <Button
+                              onClick={() => openJustificationDialog(absence)}
+                              size="sm"
+                              variant="outline"
+                              className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                            >
+                              <FileText className="w-4 h-4 mr-1" />
+                              Justifier
+                            </Button>
+                            <Button
+                              onClick={() => handleValidateAbsence(absence.id)}
+                              size="sm"
+                              className="bg-green-500 hover:bg-green-600 text-white"
+                            >
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              Valider
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -220,6 +266,60 @@ const AbsenceAdmin = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Justification Dialog */}
+      <Dialog open={isJustificationOpen} onOpenChange={setIsJustificationOpen}>
+        <DialogContent className="bg-slate-800 border-slate-600 text-white">
+          <DialogHeader>
+            <DialogTitle>Justifier l'absence</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">
+                Motif de justification
+              </label>
+              <textarea
+                value={justificationText}
+                onChange={(e) => setJustificationText(e.target.value)}
+                placeholder="Saisir le motif de l'absence (maladie, rendez-vous médical, etc.)"
+                className="w-full h-24 px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md text-white placeholder:text-slate-400 focus:border-blue-400 focus:outline-none resize-none"
+              />
+            </div>
+            
+            <div>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">
+                Document justificatif (optionnel)
+              </label>
+              <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center hover:border-slate-500 transition-colors">
+                <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="text-slate-400 text-sm">
+                  Glissez un fichier ici ou cliquez pour sélectionner
+                </p>
+                <p className="text-slate-500 text-xs mt-1">
+                  PDF, Image (max 5MB)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setIsJustificationOpen(false)}
+                className="border-slate-600 text-slate-300"
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={() => handleValidateAbsence(selectedAbsence?.id || '', true)}
+                disabled={!justificationText.trim()}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                Justifier et Valider
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

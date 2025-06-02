@@ -1,169 +1,229 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Info, Users, Target, Shield, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Info, ExternalLink, Code, Palette, Database, Zap, Shield, Users } from 'lucide-react';
 
 const About = () => {
-  const features = [
+  const technologies = [
     {
-      icon: Users,
-      title: 'Gestion Multi-Rôles',
-      description: 'Système d\'authentification avec 4 rôles distincts : Admin, Directeur, Surveillant et Formateur',
-      color: 'from-blue-500 to-cyan-500'
+      name: 'React',
+      icon: <Code className="w-6 h-6 text-blue-400" />,
+      description: 'Interface utilisateur moderne'
     },
     {
-      icon: Zap,
-      title: 'Temps Réel',
-      description: 'Synchronisation instantanée entre les saisies formateurs et l\'administration',
-      color: 'from-purple-500 to-pink-500'
+      name: 'TypeScript',
+      icon: <Shield className="w-6 h-6 text-blue-600" />,
+      description: 'Typage statique pour la fiabilité'
     },
     {
-      icon: Target,
-      title: 'Suivi Précis',
-      description: 'Tracking des absences, retards et justifications avec historique complet',
-      color: 'from-green-500 to-emerald-500'
+      name: 'Tailwind CSS',
+      icon: <Palette className="w-6 h-6 text-cyan-400" />,
+      description: 'Design system moderne'
     },
     {
-      icon: Shield,
-      title: 'Sécurité',
-      description: 'Accès contrôlé et sécurisé selon les permissions de chaque rôle utilisateur',
-      color: 'from-orange-500 to-red-500'
+      name: 'Vite',
+      icon: <Zap className="w-6 h-6 text-yellow-400" />,
+      description: 'Build tool ultra-rapide'
+    },
+    {
+      name: 'Local Storage',
+      icon: <Database className="w-6 h-6 text-green-400" />,
+      description: 'Stockage des données'
+    },
+    {
+      name: 'Lucide Icons',
+      icon: <Users className="w-6 h-6 text-purple-400" />,
+      description: 'Icônes modernes et élégantes'
     }
   ];
 
-  const stats = [
-    { label: 'Filières', value: '4+', description: 'TSDI, TSRI, TDM, TMSIR' },
-    { label: 'Stagiaires', value: '1,250+', description: 'Tous niveaux confondus' },
-    { label: 'Séances/Jour', value: '4', description: '08:30-11:00, 11:00-13:30, 13:30-16:00, 16:00-18:30' },
-    { label: 'Formateurs', value: '25+', description: 'Équipe pédagogique complète' }
+  const features = [
+    {
+      title: 'Gestion Multi-Rôles',
+      description: 'Support pour administrateurs, directeurs, surveillants et formateurs',
+      icon: <Users className="w-8 h-8 text-blue-400" />
+    },
+    {
+      title: 'Interface Moderne',
+      description: 'Design responsive avec animations fluides et thème sombre',
+      icon: <Palette className="w-8 h-8 text-purple-400" />
+    },
+    {
+      title: 'Gestion Complète',
+      description: 'Filières, classes, stagiaires et système d\'absences intégré',
+      icon: <Database className="w-8 h-8 text-green-400" />
+    },
+    {
+      title: 'Temps Réel',
+      description: 'Statistiques en direct et notifications instantanées',
+      icon: <Zap className="w-8 h-8 text-yellow-400" />
+    }
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
-          <span className="text-3xl font-bold text-white">A</span>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">À Propos d'Absenta</h1>
+          <p className="text-slate-400">Système de gestion des absences pour établissements de formation</p>
         </div>
-        <h1 className="text-4xl font-bold text-white mb-4">
-          À propos d'<span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Absencia</span>
-        </h1>
-        <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-          Solution moderne de gestion des absences pour le Centre de Formation aux Métiers de l'OFPPT, 
-          conçue pour optimiser le suivi des stagiaires en temps réel.
-        </p>
+        <div className="flex items-center space-x-2 bg-slate-800/50 backdrop-blur-xl border border-blue-500/20 rounded-xl p-4">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <Info className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-white font-semibold">Version 1.0.0</p>
+            <p className="text-slate-400 text-sm">Beta Release</p>
+          </div>
+        </div>
       </div>
 
-      {/* Mission */}
+      {/* Project Overview */}
       <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
         <CardHeader>
           <CardTitle className="text-white flex items-center space-x-2">
-            <Target className="w-6 h-6 text-blue-400" />
-            <span>Notre Mission</span>
+            <Info className="w-5 h-5 text-blue-400" />
+            <span>Vue d'ensemble du projet</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-slate-300 leading-relaxed">
-          <p className="mb-4">
-            Absencia révolutionne la gestion des absences dans les centres de formation en offrant une plateforme 
-            intuitive, moderne et connectée. Notre objectif est de simplifier le processus de suivi des présences 
-            tout en fournissant des données précieuses pour l'amélioration continue de l'expérience éducative.
+        <CardContent className="space-y-6">
+          <p className="text-slate-300 leading-relaxed">
+            <strong className="text-white">Absenta</strong> est une solution moderne de gestion des absences développée 
+            spécifiquement pour les établissements de formation professionnelle. L'application offre une interface 
+            intuitive et responsive permettant aux différents acteurs (formateurs, surveillants, directeurs) de 
+            gérer efficacement le suivi des présences des stagiaires.
           </p>
-          <p>
-            Grâce à notre interface responsive et nos fonctionnalités temps réel, les formateurs peuvent se concentrer 
-            sur l'enseignement tandis que l'administration dispose d'outils puissants pour analyser et optimiser 
-            la fréquentation des cours.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Features */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {features.map((feature, index) => {
-          const Icon = feature.icon;
-          return (
-            <Card key={index} className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20 hover:border-blue-400/40 transition-all duration-300 hover:scale-[1.02]">
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-4">
-                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${feature.color} flex items-center justify-center flex-shrink-0`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-bold text-lg mb-2">{feature.title}</h3>
-                    <p className="text-slate-400 leading-relaxed">{feature.description}</p>
-                  </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {features.map((feature, index) => (
+              <div key={index} className="p-4 bg-slate-700/30 rounded-lg border border-slate-600">
+                <div className="flex items-center space-x-3 mb-3">
+                  {feature.icon}
+                  <h3 className="text-white font-semibold">{feature.title}</h3>
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Stats */}
-      <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center space-x-2">
-            <Info className="w-6 h-6 text-blue-400" />
-            <span>Données Clés</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center p-4 bg-slate-700/30 rounded-lg border border-slate-600">
-                <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
-                <div className="text-blue-400 font-medium mb-1">{stat.label}</div>
-                <div className="text-slate-400 text-sm">{stat.description}</div>
+                <p className="text-slate-400 text-sm">{feature.description}</p>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Technology Stack */}
+      {/* Technologies Used */}
       <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
         <CardHeader>
           <CardTitle className="text-white flex items-center space-x-2">
-            <Zap className="w-6 h-6 text-blue-400" />
+            <Code className="w-5 h-5 text-green-400" />
             <span>Technologies Utilisées</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { name: 'React', color: 'from-blue-400 to-blue-600' },
-              { name: 'TypeScript', color: 'from-blue-500 to-blue-700' },
-              { name: 'Tailwind CSS', color: 'from-cyan-400 to-cyan-600' },
-              { name: 'Recharts', color: 'from-purple-400 to-purple-600' },
-              { name: 'Lucide Icons', color: 'from-green-400 to-green-600' },
-              { name: 'Shadcn/UI', color: 'from-orange-400 to-orange-600' },
-              { name: 'LocalStorage', color: 'from-pink-400 to-pink-600' },
-              { name: 'Responsive Design', color: 'from-indigo-400 to-indigo-600' }
-            ].map((tech, index) => (
-              <div key={index} className="text-center p-3 bg-slate-700/30 rounded-lg border border-slate-600 hover:border-slate-500 transition-colors duration-200">
-                <div className={`w-8 h-8 mx-auto mb-2 rounded-lg bg-gradient-to-r ${tech.color}`}></div>
-                <div className="text-white text-sm font-medium">{tech.name}</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {technologies.map((tech, index) => (
+              <div key={index} className="p-4 bg-slate-700/30 rounded-lg border border-slate-600 hover:bg-slate-700/50 transition-colors">
+                <div className="flex items-center space-x-3 mb-2">
+                  {tech.icon}
+                  <h4 className="text-white font-medium">{tech.name}</h4>
+                </div>
+                <p className="text-slate-400 text-sm">{tech.description}</p>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Contact */}
-      <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-xl border-blue-500/20">
-        <CardContent className="p-8 text-center">
-          <h3 className="text-2xl font-bold text-white mb-4">Centre de Formation aux Métiers - OFPPT</h3>
-          <p className="text-slate-300 mb-6">
-            Absencia est développé spécifiquement pour répondre aux besoins du CFM OFPPT 
-            en matière de gestion moderne des absences et de suivi pédagogique.
-          </p>
-          <div className="flex justify-center space-x-8 text-sm text-slate-400">
-            <div>
-              <strong className="text-white">Version:</strong> 1.0.0
+      {/* Developer Info */}
+      <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center space-x-2">
+            <Users className="w-5 h-5 text-purple-400" />
+            <span>Équipe de Développement</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-6 bg-gradient-to-r from-slate-700/50 to-slate-600/30 rounded-xl border border-slate-600">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-xl font-bold">T</span>
+              </div>
+              <div>
+                <h3 className="text-white text-xl font-bold">TechSol</h3>
+                <p className="text-slate-400 mb-2">Solutions Technologiques Innovantes</p>
+                <p className="text-slate-300 text-sm max-w-2xl">
+                  TechSol est spécialisée dans le développement d'applications web modernes et 
+                  de solutions digitales sur mesure pour les entreprises et institutions.
+                </p>
+              </div>
             </div>
-            <div>
-              <strong className="text-white">Dernière mise à jour:</strong> {new Date().toLocaleDateString('fr-FR')}
+            <div className="flex flex-col space-y-2">
+              <Button 
+                asChild
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <a 
+                  href="https://www.linkedin.com/in/guewalid/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>LinkedIn</span>
+                </a>
+              </Button>
+              <Button 
+                variant="outline"
+                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+              >
+                Contact
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Version & License */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
+          <CardHeader>
+            <CardTitle className="text-white text-lg">Informations Version</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-slate-400">Version</span>
+              <span className="text-white font-medium">1.0.0</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Date de sortie</span>
+              <span className="text-white font-medium">Décembre 2024</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Statut</span>
+              <span className="px-2 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-xs">
+                Beta
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
+          <CardHeader>
+            <CardTitle className="text-white text-lg">Support & Maintenance</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-slate-400">Support technique</span>
+              <span className="text-green-400 font-medium">Actif</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Mises à jour</span>
+              <span className="text-green-400 font-medium">Régulières</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Documentation</span>
+              <span className="text-blue-400 font-medium">Intégrée</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

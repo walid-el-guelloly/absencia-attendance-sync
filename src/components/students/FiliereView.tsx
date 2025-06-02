@@ -1,0 +1,103 @@
+
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, GraduationCap, Users, BookOpen } from 'lucide-react';
+import { Filiere, Classe, Student } from '@/utils/studentStorage';
+
+interface FiliereViewProps {
+  filiere: Filiere;
+  classes: Classe[];
+  students: Student[];
+  onBack: () => void;
+  onViewClasse: (classe: Classe) => void;
+  onEditFiliere: (filiere: Filiere) => void;
+}
+
+const FiliereView = ({ filiere, classes, students, onBack, onViewClasse, onEditFiliere }: FiliereViewProps) => {
+  const filiereClasses = classes.filter(c => c.filiereId === filiere.id);
+  const filiereStudents = students.filter(s => {
+    const studentClasse = filiereClasses.find(c => c.id === s.classeId);
+    return studentClasse !== undefined;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Button
+          onClick={onBack}
+          variant="outline"
+          className="border-slate-600 text-slate-300 hover:bg-slate-700"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
+        <Button
+          onClick={() => onEditFiliere(filiere)}
+          className="bg-blue-500 hover:bg-blue-600"
+        >
+          Modifier la filière
+        </Button>
+      </div>
+
+      <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center space-x-3">
+            <BookOpen className="w-8 h-8 text-blue-400" />
+            <div>
+              <h2 className="text-2xl font-bold">{filiere.code}</h2>
+              <p className="text-slate-400">{filiere.nom}</p>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-slate-300 mb-6">{filiere.description}</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div className="p-4 bg-slate-700/30 rounded-lg text-center">
+              <GraduationCap className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-white">{filiereClasses.length}</p>
+              <p className="text-slate-400 text-sm">Classes</p>
+            </div>
+            <div className="p-4 bg-slate-700/30 rounded-lg text-center">
+              <Users className="w-8 h-8 text-green-400 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-white">{filiereStudents.length}</p>
+              <p className="text-slate-400 text-sm">Stagiaires</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-white text-lg font-semibold">Classes de cette filière</h3>
+            {filiereClasses.length === 0 ? (
+              <p className="text-slate-400 text-center py-8">Aucune classe dans cette filière</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filiereClasses.map(classe => {
+                  const classeStudents = students.filter(s => s.classeId === classe.id);
+                  return (
+                    <Card key={classe.id} className="bg-slate-700/30 border-slate-600 hover:bg-slate-700/50 transition-colors cursor-pointer" onClick={() => onViewClasse(classe)}>
+                      <CardContent className="p-4">
+                        <h4 className="text-white font-medium mb-2">{classe.nom}</h4>
+                        <p className="text-slate-400 text-sm mb-3">
+                          Niveau {classe.niveau} • Session {classe.session}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-blue-400 font-semibold">{classeStudents.length} stagiaires</span>
+                          <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
+                            Voir →
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default FiliereView;

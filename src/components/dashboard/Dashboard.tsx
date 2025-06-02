@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, ClipboardCheck, AlertTriangle, TrendingUp, UserCheck, Clock, BookOpen } from 'lucide-react';
@@ -5,6 +6,7 @@ import StatCard from './StatCard';
 import AbsenceChart from './AbsenceChart';
 import StudentsAtRisk from './StudentsAtRisk';
 import CircularStat from './CircularStats';
+import ModernDateTime from './ModernDateTime';
 
 interface DashboardProps {
   user: any;
@@ -31,19 +33,16 @@ const Dashboard = ({ user }: DashboardProps) => {
   return (
     <div className="space-y-8">
       {/* Header Section */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
         <div>
           <h1 className="text-4xl font-bold text-white mb-3">
-            Bienvenue, {user.username}
+            Bienvenue, {user.fullName || user.username}
           </h1>
           <p className="text-slate-400 text-lg">
             Tableau de bord - {user.role === 'formateur' ? 'Saisie des absences' : 'Vue d\'ensemble'}
           </p>
         </div>
-        <div className="text-right bg-slate-800/50 backdrop-blur-xl border border-blue-500/20 rounded-xl p-4">
-          <p className="text-slate-400 text-sm">Aujourd'hui</p>
-          <p className="text-white font-semibold text-lg">{new Date().toLocaleDateString('fr-FR')}</p>
-        </div>
+        <ModernDateTime />
       </div>
 
       {/* Stats Cards Section */}
