@@ -16,32 +16,38 @@ interface User {
   username: string;
   fullName: string;
   role: 'admin' | 'directeur' | 'surveillant' | 'formateur';
+  email: string;
 }
 
-// Mock users with full names
+// Mock users avec noms complets
 const mockUsers: User[] = [
-  { id: '1', username: 'admin', fullName: 'Mohammed Alami', role: 'admin' },
-  { id: '2', username: 'directeur', fullName: 'Fatima Benali', role: 'directeur' },
-  { id: '3', username: 'surveillant', fullName: 'Youssef Idrissi', role: 'surveillant' },
-  { id: '4', username: 'formateur', fullName: 'Aicha Zahra', role: 'formateur' }
+  { id: '1', username: 'admin', fullName: 'Mohammed Alami', role: 'admin', email: 'admin@cfm.ofppt.ma' },
+  { id: '2', username: 'directeur', fullName: 'Fatima Benali', role: 'directeur', email: 'directeur@cfm.ofppt.ma' },
+  { id: '3', username: 'surveillant', fullName: 'Youssef Idrissi', role: 'surveillant', email: 'surveillant@cfm.ofppt.ma' },
+  { id: '4', username: 'formateur', fullName: 'Aicha Zahra', role: 'formateur', email: 'formateur@cfm.ofppt.ma' }
 ];
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
 
-  const handleLogin = (username: string, password: string) => {
-    console.log('Tentative de connexion:', { username, password });
+  const handleLogin = (userData: any) => {
+    console.log('Tentative de connexion:', userData);
     
-    // Simple authentication logic
-    const foundUser = mockUsers.find(u => u.username === username && password === 'password');
+    // Trouver l'utilisateur correspondant basé sur l'email et le rôle
+    const foundUser = mockUsers.find(u => 
+      u.email === userData.email && u.role === userData.role
+    );
     
     if (foundUser) {
-      setUser(foundUser);
-      console.log('Connexion réussie pour:', foundUser);
-      return true;
+      // Utiliser le username fourni ou celui par défaut
+      const userWithUsername = {
+        ...foundUser,
+        username: userData.username || foundUser.username
+      };
+      setUser(userWithUsername);
+      console.log('Connexion réussie pour:', userWithUsername);
     } else {
       console.log('Échec de la connexion');
-      return false;
     }
   };
 
