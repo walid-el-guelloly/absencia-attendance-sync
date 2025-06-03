@@ -20,6 +20,24 @@ const Dashboard = ({ user }: DashboardProps) => {
     alertStudents: 15
   });
 
+  const [displayName, setDisplayName] = useState('');
+
+  useEffect(() => {
+    // Récupérer le nom complet depuis le localStorage
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setDisplayName(userData.fullName || userData.username || user.username);
+      } catch (error) {
+        console.error('Erreur lors de la lecture des données utilisateur:', error);
+        setDisplayName(user.fullName || user.username);
+      }
+    } else {
+      setDisplayName(user.fullName || user.username);
+    }
+  }, [user]);
+
   const [chartData] = useState([
     { name: 'Lun', absences: 45, presents: 1205 },
     { name: 'Mar', absences: 52, presents: 1198 },
@@ -36,7 +54,7 @@ const Dashboard = ({ user }: DashboardProps) => {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
         <div>
           <h1 className="text-4xl font-bold text-white mb-3">
-            Bienvenue, {user.fullName || user.username}
+            Bienvenue, {displayName}
           </h1>
           <p className="text-slate-400 text-lg">
             Tableau de bord - {user.role === 'formateur' ? 'Saisie des absences' : 'Vue d\'ensemble'}

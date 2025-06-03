@@ -1,8 +1,11 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, GraduationCap, Search, Edit, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, GraduationCap, Search, Edit, Trash2, Plus, UserPlus } from 'lucide-react';
 import { Classe, Student, Filiere } from '@/utils/studentStorage';
 
 interface ClasseViewProps {
@@ -14,10 +17,21 @@ interface ClasseViewProps {
   onEditClasse: (classe: Classe) => void;
   onEditStudent: (student: Student) => void;
   onDeleteStudent: (studentId: string) => void;
+  onAddStudent: (student: Omit<Student, 'id' | 'createdAt'>) => void;
 }
 
-const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditClasse, onEditStudent, onDeleteStudent }: ClasseViewProps) => {
+const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditClasse, onEditStudent, onDeleteStudent, onAddStudent }: ClasseViewProps) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    nom: '',
+    prenom: '',
+    email: '',
+    sexe: '',
+    dateNaissance: '',
+    telephone: '',
+    statut: 'actif' as const
+  });
   
   const classeStudents = students.filter(s => s.classeId === classe.id);
   const filteredStudents = classeStudents.filter(student =>
@@ -25,6 +39,33 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
     student.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.nom || !formData.prenom || !formData.email || !formData.sexe) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    onAddStudent({
+      ...formData,
+      classeId: classe.id
+    });
+
+    // Reset form
+    setFormData({
+      nom: '',
+      prenom: '',
+      email: '',
+      sexe: '',
+      dateNaissance: '',
+      telephone: '',
+      statut: 'actif'
+    });
+    
+    setIsAddDialogOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -37,12 +78,21 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Button>
-        <Button
-          onClick={() => onEditClasse(classe)}
-          className="bg-purple-500 hover:bg-purple-600"
-        >
-          Modifier la classe
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="bg-green-500 hover:bg-green-600"
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Ajouter Stagiaire
+          </Button>
+          <Button
+            onClick={() => onEditClasse(classe)}
+            className="bg-purple-500 hover:bg-purple-600"
+          >
+            Modifier la classe
+          </Button>
+        </div>
       </div>
 
       <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
@@ -81,6 +131,15 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
               <p className="text-slate-400">
                 {searchTerm ? 'Aucun stagiaire trouvé' : 'Aucun stagiaire dans cette classe'}
               </p>
+              {!searchTerm && (
+                <Button
+                  onClick={() => setIsAddDialogOpen(true)}
+                  className="mt-4 bg-green-500 hover:bg-green-600"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Ajouter le premier stagiaire
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -144,6 +203,107 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
           )}
         </CardContent>
       </Card>
+
+      {/* Dialog pour ajouter un stagiaire */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle>Ajouter un stagiaire à {classe.nom}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Prénom *</label>
+                <Input
+                  value={formData.prenom}
+                  onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
+                  className="bg-slate-700/50 border-slate-600 text-white"
+                  placeholder="Ahmed"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">Nom *</label>
+                <Input
+                  value={formData.nom}
+                  onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                  className="bg-slate-700/50 border-slate-600 text-white"
+                  placeholder="Benali"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Email *</label>
+              <Input
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="bg-slate-700/50 border-slate-600 text-white"
+                placeholder="ahmed.benali@email.com"
+                type="email"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Sexe *</label>
+              <Select value={formData.sexe} onValueChange={(value) => setFormData({ ...formData, sexe: value })}>
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                  <SelectValue placeholder="Choisir le sexe" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-600">
+                  <SelectItem value="M" className="text-white hover:bg-slate-700">Masculin</SelectItem>
+                  <SelectItem value="F" className="text-white hover:bg-slate-700">Féminin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Date de naissance</label>
+              <Input
+                value={formData.dateNaissance}
+                onChange={(e) => setFormData({ ...formData, dateNaissance: e.target.value })}
+                className="bg-slate-700/50 border-slate-600 text-white"
+                type="date"
+              />
+            </div>
+            
+            <div>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Téléphone</label>
+              <Input
+                value={formData.telephone}
+                onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
+                className="bg-slate-700/50 border-slate-600 text-white"
+                placeholder="+212 6XX XXX XXX"
+              />
+            </div>
+            
+            <div>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Statut</label>
+              <Select value={formData.statut} onValueChange={(value: 'actif' | 'inactif' | 'suspendu') => setFormData({ ...formData, statut: value })}>
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                  <SelectValue placeholder="Statut" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-600">
+                  <SelectItem value="actif" className="text-white hover:bg-slate-700">Actif</SelectItem>
+                  <SelectItem value="inactif" className="text-white hover:bg-slate-700">Inactif</SelectItem>
+                  <SelectItem value="suspendu" className="text-white hover:bg-slate-700">Suspendu</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)} className="border-slate-600 text-slate-300">
+                Annuler
+              </Button>
+              <Button type="submit" className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
+                Ajouter
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

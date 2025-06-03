@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Bell, LogOut, User, Menu } from 'lucide-react';
@@ -12,6 +12,23 @@ interface HeaderProps {
 
 const Header = ({ user, onLogout, onToggleSidebar }: HeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [displayName, setDisplayName] = useState('');
+
+  useEffect(() => {
+    // Récupérer le nom complet depuis le localStorage
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setDisplayName(userData.fullName || userData.username || user.username);
+      } catch (error) {
+        console.error('Erreur lors de la lecture des données utilisateur:', error);
+        setDisplayName(user.fullName || user.username);
+      }
+    } else {
+      setDisplayName(user.fullName || user.username);
+    }
+  }, [user]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +86,7 @@ const Header = ({ user, onLogout, onToggleSidebar }: HeaderProps) => {
           <div className="flex items-center space-x-2 px-2 py-1 bg-slate-700/50 rounded-lg border border-slate-600">
             <User className="w-3 h-3 text-blue-400" />
             <div className="text-xs">
-              <p className="text-white font-medium">{user.fullName || user.username}</p>
+              <p className="text-white font-medium">{displayName}</p>
               <p className="text-slate-400 text-xs capitalize">{user.role}</p>
             </div>
           </div>

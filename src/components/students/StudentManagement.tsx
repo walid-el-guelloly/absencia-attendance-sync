@@ -123,6 +123,22 @@ const StudentManagement = () => {
     }
   };
 
+  const handleAddStudentToClasse = (data: Omit<Student, 'id' | 'createdAt'>) => {
+    console.log('Ajout stagiaire à une classe:', data);
+    try {
+      studentStorage.addStudent(data);
+      toast({ title: "Stagiaire ajouté", description: "Le nouveau stagiaire a été ajouté à la classe avec succès" });
+      loadData();
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout du stagiaire:', error);
+      toast({ 
+        title: "Erreur", 
+        description: "Une erreur est survenue lors de l'ajout",
+        variant: "destructive" 
+      });
+    }
+  };
+
   const handleDelete = (type: 'filiere' | 'classe' | 'student', id: string) => {
     console.log('Tentative de suppression:', type, id);
     try {
@@ -275,6 +291,7 @@ const StudentManagement = () => {
         onEditClasse={(classe) => openDialog('classe', classe)}
         onEditStudent={(student) => openDialog('student', student)}
         onDeleteStudent={(studentId) => handleDelete('student', studentId)}
+        onAddStudent={handleAddStudentToClasse}
       />
     );
   }
