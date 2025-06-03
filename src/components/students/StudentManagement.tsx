@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Users, Plus, Search, Eye, Edit, Trash2, BookOpen, GraduationCap, AlertTriangle } from 'lucide-react';
+import { Users, Plus, Search, Eye, Edit, Trash2, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Building, Calendar } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { studentStorage, Filiere, Classe, Student } from '@/utils/studentStorage';
 import FiliereView from './FiliereView';
@@ -276,7 +275,6 @@ const StudentManagement = () => {
         onEditClasse={(classe) => openDialog('classe', classe)}
         onEditStudent={(student) => openDialog('student', student)}
         onDeleteStudent={(studentId) => handleDelete('student', studentId)}
-        onDeleteClasse={(classeId) => handleDelete('classe', classeId)}
       />
     );
   }
@@ -351,31 +349,53 @@ const StudentManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Statistics info - modern and fluid */}
-      <Card className="bg-slate-800/50 backdrop-blur-xl border-green-500/20">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-green-400">{filieres.length}</p>
-                <p className="text-slate-400 text-sm">Filières</p>
+      {/* Statistics - modern design */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 backdrop-blur-xl border-blue-500/20">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-400 text-sm font-medium mb-1">Filières</p>
+                <p className="text-3xl font-bold text-white">{filieres.length}</p>
+                <p className="text-slate-400 text-sm">Programmes disponibles</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-blue-400">{classes.length}</p>
-                <p className="text-slate-400 text-sm">Classes</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-purple-400">{students.length}</p>
-                <p className="text-slate-400 text-sm">Stagiaires</p>
+              <div className="p-3 bg-blue-500/20 rounded-xl">
+                <BookOpen className="w-8 h-8 text-blue-400" />
               </div>
             </div>
-            <div className="text-green-400 text-sm">
-              <BookOpen className="w-5 h-5 inline mr-2" />
-              Système opérationnel
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 backdrop-blur-xl border-purple-500/20">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-400 text-sm font-medium mb-1">Classes</p>
+                <p className="text-3xl font-bold text-white">{classes.length}</p>
+                <p className="text-slate-400 text-sm">Groupes d'apprentissage</p>
+              </div>
+              <div className="p-3 bg-purple-500/20 rounded-xl">
+                <Building className="w-8 h-8 text-purple-400" />
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 backdrop-blur-xl border-green-500/20">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-400 text-sm font-medium mb-1">Stagiaires</p>
+                <p className="text-3xl font-bold text-white">{students.length}</p>
+                <p className="text-slate-400 text-sm">Étudiants inscrits</p>
+              </div>
+              <div className="p-3 bg-green-500/20 rounded-xl">
+                <TrendingUp className="w-8 h-8 text-green-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Filières Overview */}
       <div className="space-y-6">

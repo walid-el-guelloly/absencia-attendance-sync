@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -143,8 +142,7 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
           date: today,
           type: 'absent',
           formateur: user.fullName || user.username,
-          validated: false,
-          timeSlot: selectedTimeSlot
+          validated: false
         });
         savedCount++;
       }
@@ -155,8 +153,7 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
           date: today,
           type: 'retard',
           formateur: user.fullName || user.username,
-          validated: false,
-          timeSlot: selectedTimeSlot
+          validated: false
         });
         savedCount++;
       }
