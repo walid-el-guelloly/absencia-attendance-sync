@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,10 +26,10 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
     nom: '',
     prenom: '',
     email: '',
-    sexe: '',
+    sexe: '' as 'M' | 'F' | '',
     dateNaissance: '',
     telephone: '',
-    statut: 'actif' as const
+    statut: 'actif' as 'actif' | 'inactif' | 'suspendu'
   });
   
   const classeStudents = students.filter(s => s.classeId === classe.id);
@@ -50,6 +49,7 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
 
     onAddStudent({
       ...formData,
+      sexe: formData.sexe as 'M' | 'F',
       classeId: classe.id
     });
 
@@ -248,7 +248,7 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
             
             <div>
               <label className="text-slate-300 text-sm font-medium mb-2 block">Sexe *</label>
-              <Select value={formData.sexe} onValueChange={(value) => setFormData({ ...formData, sexe: value })}>
+              <Select value={formData.sexe} onValueChange={(value: 'M' | 'F') => setFormData({ ...formData, sexe: value })}>
                 <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                   <SelectValue placeholder="Choisir le sexe" />
                 </SelectTrigger>
