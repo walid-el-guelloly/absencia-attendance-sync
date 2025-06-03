@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, GraduationCap, Users, BookOpen } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ArrowLeft, GraduationCap, Users, BookOpen, Trash2, AlertTriangle } from 'lucide-react';
 import { Filiere, Classe, Student } from '@/utils/studentStorage';
 
 interface FiliereViewProps {
@@ -12,9 +13,10 @@ interface FiliereViewProps {
   onBack: () => void;
   onViewClasse: (classe: Classe) => void;
   onEditFiliere: (filiere: Filiere) => void;
+  onDeleteClasse?: (classeId: string) => void;
 }
 
-const FiliereView = ({ filiere, classes, students, onBack, onViewClasse, onEditFiliere }: FiliereViewProps) => {
+const FiliereView = ({ filiere, classes, students, onBack, onViewClasse, onEditFiliere, onDeleteClasse }: FiliereViewProps) => {
   const filiereClasses = classes.filter(c => c.filiereId === filiere.id);
   const filiereStudents = students.filter(s => {
     const studentClasse = filiereClasses.find(c => c.id === s.classeId);
@@ -75,15 +77,58 @@ const FiliereView = ({ filiere, classes, students, onBack, onViewClasse, onEditF
                 {filiereClasses.map(classe => {
                   const classeStudents = students.filter(s => s.classeId === classe.id);
                   return (
-                    <Card key={classe.id} className="bg-slate-700/30 border-slate-600 hover:bg-slate-700/50 transition-colors cursor-pointer" onClick={() => onViewClasse(classe)}>
+                    <Card key={classe.id} className="bg-slate-700/30 border-slate-600 hover:bg-slate-700/50 transition-colors">
                       <CardContent className="p-4">
-                        <h4 className="text-white font-medium mb-2">{classe.nom}</h4>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-white font-medium">{classe.nom}</h4>
+                          {onDeleteClasse && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-red-400 hover:text-red-300 h-8 w-8 p-0"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="bg-slate-800 border-slate-600 text-white">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="flex items-center space-x-2">
+                                    <AlertTriangle className="w-5 h-5 text-red-400" />
+                                    <span>Confirmer la suppression</span>
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-slate-300">
+                                    Êtes-vous sûr de vouloir supprimer la classe <strong>{classe.nom}</strong> ?
+                                    Cette action est irréversible.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
+                                    Annuler
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => onDeleteClasse(classe.id)}
+                                    className="bg-red-500 hover:bg-red-600"
+                                  >
+                                    Supprimer
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </div>
                         <p className="text-slate-400 text-sm mb-3">
                           Niveau {classe.niveau} • Session {classe.session}
                         </p>
                         <div className="flex items-center justify-between">
                           <span className="text-blue-400 font-semibold">{classeStudents.length} stagiaires</span>
-                          <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-blue-400 hover:text-blue-300"
+                            onClick={() => onViewClasse(classe)}
+                          >
                             Voir →
                           </Button>
                         </div>

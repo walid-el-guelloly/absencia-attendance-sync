@@ -18,9 +18,16 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedFiliere, setSelectedFiliere] = useState('');
   const [selectedClasse, setSelectedClasse] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
   const [sessionId, setSessionId] = useState('');
   const [absences, setAbsences] = useState<{[key: string]: { absent: boolean, retard: boolean }}>({});
+
+  const timeSlots = [
+    { value: '08:30-11:00', label: '08:30–11:00' },
+    { value: '11:00-13:30', label: '11:00–13:30' },
+    { value: '13:30-16:00', label: '13:30–16:00' },
+    { value: '16:00-18:30', label: '16:00–18:30' }
+  ];
 
   useEffect(() => {
     loadData();
@@ -53,8 +60,38 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
       console.log('Classe sélectionnée:', selectedClasse);
       const classeStudents = students.filter(s => s.classeId === selectedClasse && s.statut === 'actif');
       console.log('Stagiaires de la classe:', classeStudents);
+      
+      // Load existing absences for this session to auto-check delays for justified absences
+      loadExistingAbsences();
     }
-  }, [selectedClasse, students]);
+  }, [selectedClasse, students, selectedTimeSlot]);
+
+  const loadExistingAbsences = () => {
+    if (!selectedClasse || !selectedTimeSlot) return;
+    
+    const existingAbsences = studentStorage.getAbsences();
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Check for students with justified absences in this time slot by this teacher
+    const newAbsences: {[key: string]: { absent: boolean, retard: boolean }} = {};
+    
+    classeStudents.forEach(student => {
+      const studentAbsences = existingAbsences.filter(abs => 
+        abs.studentId === student.id && 
+        abs.date === today &&
+        abs.formateur === (user.fullName || user.username) &&
+        abs.validated === true && // Absence was justified
+        abs.type === 'absent'
+      );
+      
+      // If student had justified absence from this teacher today, auto-mark as delay
+      if (studentAbsences.length > 0) {
+        newAbsences[student.id] = { absent: false, retard: true };
+      }
+    });
+    
+    setAbsences(newAbsences);
+  };
 
   const filteredClasses = classes.filter(c => c.filiereId === selectedFiliere);
   const classeStudents = students.filter(s => s.classeId === selectedClasse && s.statut === 'actif');
@@ -73,10 +110,10 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
   };
 
   const handleSubmitAbsences = () => {
-    if (!selectedFiliere || !selectedClasse || !sessionId.trim()) {
+    if (!selectedFiliere || !selectedClasse || !selectedTimeSlot || !sessionId.trim()) {
       toast({
         title: "Erreur",
-        description: "Veuillez sélectionner une filière, une classe et saisir un ID de session",
+        description: "Veuillez sélectionner une filière, une classe, un créneau et saisir un ID de session",
         variant: "destructive"
       });
       return;
@@ -95,27 +132,31 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
       return;
     }
 
+    const today = new Date().toISOString().split('T')[0];
     let savedCount = 0;
+    
     absencesToSave.forEach(([studentId, value]) => {
       if (value.absent) {
         studentStorage.addAbsence({
           studentId,
-          sessionId: sessionId.trim(),
-          date: selectedDate,
+          sessionId: `${sessionId.trim()}-${selectedTimeSlot}`,
+          date: today,
           type: 'absent',
           formateur: user.fullName || user.username,
-          validated: false
+          validated: false,
+          timeSlot: selectedTimeSlot
         });
         savedCount++;
       }
       if (value.retard) {
         studentStorage.addAbsence({
           studentId,
-          sessionId: sessionId.trim(),
-          date: selectedDate,
+          sessionId: `${sessionId.trim()}-${selectedTimeSlot}`,
+          date: today,
           type: 'retard',
           formateur: user.fullName || user.username,
-          validated: false
+          validated: false,
+          timeSlot: selectedTimeSlot
         });
         savedCount++;
       }
@@ -145,15 +186,6 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
           <p className="text-white font-semibold">{user.fullName || user.username}</p>
         </div>
       </div>
-
-      {/* Section de debug pour vérifier les données */}
-      <Card className="bg-slate-800/50 backdrop-blur-xl border-yellow-500/20">
-        <CardContent className="p-4">
-          <p className="text-yellow-400 text-sm">
-            Debug: {filieres.length} filières, {classes.length} classes, {students.length} stagiaires chargés
-          </p>
-        </CardContent>
-      </Card>
 
       {/* Selection Form */}
       <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
@@ -198,20 +230,26 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
             </div>
 
             <div>
-              <label className="text-slate-300 text-sm font-medium mb-2 block">Date</label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md text-white focus:border-blue-400 focus:outline-none"
-              />
+              <label className="text-slate-300 text-sm font-medium mb-2 block">Créneau</label>
+              <Select value={selectedTimeSlot} onValueChange={setSelectedTimeSlot}>
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                  <SelectValue placeholder="Choisir un créneau" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-600">
+                  {timeSlots.map(slot => (
+                    <SelectItem key={slot.value} value={slot.value} className="text-white hover:bg-slate-700">
+                      {slot.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
               <label className="text-slate-300 text-sm font-medium mb-2 block">ID Session</label>
               <input
                 type="text"
-                placeholder="ex: S1-Math-9h"
+                placeholder="ex: Math-Cours1"
                 value={sessionId}
                 onChange={(e) => setSessionId(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md text-white focus:border-blue-400 focus:outline-none placeholder:text-slate-400"
@@ -241,11 +279,6 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
                 <Users className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                 <p className="text-slate-400">
                   Aucun stagiaire actif dans cette classe
-                  {selectedClasse && (
-                    <span className="block text-sm mt-2 text-yellow-400">
-                      Classe ID: {selectedClasse}
-                    </span>
-                  )}
                 </p>
               </div>
             ) : (
@@ -315,7 +348,7 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
                 <div className="pt-6 border-t border-slate-700 flex justify-end">
                   <Button
                     onClick={handleSubmitAbsences}
-                    disabled={Object.keys(absences).length === 0 || !sessionId.trim()}
+                    disabled={Object.keys(absences).length === 0 || !sessionId.trim() || !selectedTimeSlot}
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-slate-600 disabled:to-slate-700"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />

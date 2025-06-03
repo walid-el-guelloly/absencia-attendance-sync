@@ -1,10 +1,12 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Plus, Search, Eye, Edit, Trash2, BookOpen, GraduationCap } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Users, Plus, Search, Eye, Edit, Trash2, BookOpen, GraduationCap, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { studentStorage, Filiere, Classe, Student } from '@/utils/studentStorage';
 import FiliereView from './FiliereView';
@@ -124,62 +126,68 @@ const StudentManagement = () => {
 
   const handleDelete = (type: 'filiere' | 'classe' | 'student', id: string) => {
     console.log('Tentative de suppression:', type, id);
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
-      try {
-        switch (type) {
-          case 'filiere':
-            // Check if filiere has classes
-            const filiereClasses = classes.filter(c => c.filiereId === id);
-            if (filiereClasses.length > 0) {
-              toast({ 
-                title: "Suppression impossible", 
-                description: "Cette filière contient des classes. Supprimez d'abord les classes.",
-                variant: "destructive" 
-              });
-              return;
-            }
-            studentStorage.deleteFiliere(id);
-            toast({ title: "Filière supprimée", variant: "destructive" });
-            break;
-          case 'classe':
-            // Check if classe has students
-            const classeStudents = students.filter(s => s.classeId === id);
-            if (classeStudents.length > 0) {
-              toast({ 
-                title: "Suppression impossible", 
-                description: "Cette classe contient des stagiaires. Supprimez d'abord les stagiaires.",
-                variant: "destructive" 
-              });
-              return;
-            }
-            studentStorage.deleteClasse(id);
-            toast({ title: "Classe supprimée", variant: "destructive" });
-            break;
-          case 'student':
-            studentStorage.deleteStudent(id);
-            toast({ title: "Stagiaire supprimé", variant: "destructive" });
-            break;
-        }
-        loadData();
-      } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
-        toast({ 
-          title: "Erreur", 
-          description: "Une erreur est survenue lors de la suppression",
-          variant: "destructive" 
-        });
+    try {
+      switch (type) {
+        case 'filiere':
+          // Check if filiere has classes
+          const filiereClasses = classes.filter(c => c.filiereId === id);
+          if (filiereClasses.length > 0) {
+            toast({ 
+              title: "Suppression impossible", 
+              description: "Cette filière contient des classes. Supprimez d'abord les classes.",
+              variant: "destructive" 
+            });
+            return;
+          }
+          studentStorage.deleteFiliere(id);
+          toast({ title: "Filière supprimée", variant: "destructive" });
+          break;
+        case 'classe':
+          // Check if classe has students
+          const classeStudents = students.filter(s => s.classeId === id);
+          if (classeStudents.length > 0) {
+            toast({ 
+              title: "Suppression impossible", 
+              description: "Cette classe contient des stagiaires. Supprimez d'abord les stagiaires.",
+              variant: "destructive" 
+            });
+            return;
+          }
+          studentStorage.deleteClasse(id);
+          toast({ title: "Classe supprimée", variant: "destructive" });
+          break;
+        case 'student':
+          studentStorage.deleteStudent(id);
+          toast({ title: "Stagiaire supprimé", variant: "destructive" });
+          break;
       }
+      loadData();
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      toast({ 
+        title: "Erreur", 
+        description: "Une erreur est survenue lors de la suppression",
+        variant: "destructive" 
+      });
     }
   };
 
+  // Fixed filtering logic
   const filteredStudents = students.filter(student => {
     const matchesSearch = student.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.prenom.toLowerCase().includes(searchTerm.toLowerCase());
+                         student.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         student.email.toLowerCase().includes(searchTerm.toLowerCase());
     if (selectedFiliere === 'all') return matchesSearch;
     
     const studentClasse = classes.find(c => c.id === student.classeId);
     return matchesSearch && studentClasse?.filiereId === selectedFiliere;
   });
+
+  // Fixed filtered filieres for search
+  const filteredFilieres = filieres.filter(filiere => 
+    filiere.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    filiere.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Navigation handlers
   const handleViewFiliere = (filiere: Filiere) => {
@@ -268,6 +276,7 @@ const StudentManagement = () => {
         onEditClasse={(classe) => openDialog('classe', classe)}
         onEditStudent={(student) => openDialog('student', student)}
         onDeleteStudent={(studentId) => handleDelete('student', studentId)}
+        onDeleteClasse={(classeId) => handleDelete('classe', classeId)}
       />
     );
   }
@@ -281,6 +290,7 @@ const StudentManagement = () => {
         onBack={handleBackToOverview}
         onViewClasse={handleViewClasse}
         onEditFiliere={(filiere) => openDialog('filiere', filiere)}
+        onDeleteClasse={(classeId) => handleDelete('classe', classeId)}
       />
     );
   }
@@ -317,7 +327,7 @@ const StudentManagement = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <Input
-                  placeholder="Rechercher..."
+                  placeholder="Rechercher stagiaires, filières, classes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
@@ -332,7 +342,7 @@ const StudentManagement = () => {
                 <SelectItem value="all" className="text-white hover:bg-slate-700">Toutes les filières</SelectItem>
                 {filieres.map(filiere => (
                   <SelectItem key={filiere.id} value={filiere.id} className="text-white hover:bg-slate-700">
-                    {filiere.code}
+                    {filiere.code} - {filiere.nom}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -341,12 +351,29 @@ const StudentManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Debug info */}
-      <Card className="bg-slate-800/50 backdrop-blur-xl border-yellow-500/20">
+      {/* Statistics info - modern and fluid */}
+      <Card className="bg-slate-800/50 backdrop-blur-xl border-green-500/20">
         <CardContent className="p-4">
-          <p className="text-yellow-400 text-sm">
-            Debug: {filieres.length} filières, {classes.length} classes, {students.length} stagiaires
-          </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-400">{filieres.length}</p>
+                <p className="text-slate-400 text-sm">Filières</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-400">{classes.length}</p>
+                <p className="text-slate-400 text-sm">Classes</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-purple-400">{students.length}</p>
+                <p className="text-slate-400 text-sm">Stagiaires</p>
+              </div>
+            </div>
+            <div className="text-green-400 text-sm">
+              <BookOpen className="w-5 h-5 inline mr-2" />
+              Système opérationnel
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -356,7 +383,7 @@ const StudentManagement = () => {
           <h2 className="text-2xl font-semibold text-white">Filières</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filieres.map(filiere => {
+          {(searchTerm ? filteredFilieres : filieres).map(filiere => {
             const filiereClasses = classes.filter(c => c.filiereId === filiere.id);
             const filiereStudents = students.filter(s => {
               const studentClasse = filiereClasses.find(c => c.id === s.classeId);
@@ -393,17 +420,41 @@ const StudentManagement = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          handleDelete('filiere', filiere.id); 
-                        }} 
-                        className="text-red-400 hover:text-red-300 h-8 w-8 p-0"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-red-400 hover:text-red-300 h-8 w-8 p-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="bg-slate-800 border-slate-600 text-white">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center space-x-2">
+                              <AlertTriangle className="w-5 h-5 text-red-400" />
+                              <span>Confirmer la suppression</span>
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-slate-300">
+                              Êtes-vous sûr de vouloir supprimer la filière <strong>{filiere.nom}</strong> ?
+                              Cette action est irréversible.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
+                              Annuler
+                            </AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDelete('filiere', filiere.id)}
+                              className="bg-red-500 hover:bg-red-600"
+                            >
+                              Supprimer
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                   <div onClick={() => handleViewFiliere(filiere)}>
@@ -422,6 +473,38 @@ const StudentManagement = () => {
           })}
         </div>
       </div>
+
+      {/* Students List if search term */}
+      {searchTerm && filteredStudents.length > 0 && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-semibold text-white">Stagiaires trouvés</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredStudents.map(student => {
+              const studentClasse = classes.find(c => c.id === student.classeId);
+              const studentFiliere = filieres.find(f => f.id === studentClasse?.filiereId);
+              
+              return (
+                <Card key={student.id} className="bg-slate-800/50 border-slate-600 hover:border-blue-400/40 transition-colors cursor-pointer" onClick={() => handleViewStudent(student)}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                        student.sexe === 'M' ? 'bg-blue-500' : 'bg-pink-500'
+                      }`}>
+                        {student.prenom[0]}{student.nom[0]}
+                      </div>
+                      <div>
+                        <h4 className="text-white font-medium">{student.prenom} {student.nom}</h4>
+                        <p className="text-slate-400 text-sm">{studentClasse?.nom}</p>
+                        <p className="text-slate-500 text-xs">{studentFiliere?.code}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Dialog for adding/editing */}
       <FormDialog
