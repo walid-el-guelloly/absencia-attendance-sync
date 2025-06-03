@@ -187,6 +187,28 @@ const StudentManagement = () => {
     }
   };
 
+  const handleDeleteStudents = (studentIds: string[]) => {
+    console.log('Suppression multiple de stagiaires:', studentIds);
+    try {
+      studentIds.forEach(id => {
+        studentStorage.deleteStudent(id);
+      });
+      toast({ 
+        title: "Stagiaires supprimés", 
+        description: `${studentIds.length} stagiaire(s) supprimé(s) avec succès`,
+        variant: "destructive" 
+      });
+      loadData();
+    } catch (error) {
+      console.error('Erreur lors de la suppression multiple:', error);
+      toast({ 
+        title: "Erreur", 
+        description: "Une erreur est survenue lors de la suppression",
+        variant: "destructive" 
+      });
+    }
+  };
+
   // Fixed filtering logic
   const filteredStudents = students.filter(student => {
     const matchesSearch = student.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -291,6 +313,7 @@ const StudentManagement = () => {
         onEditClasse={(classe) => openDialog('classe', classe)}
         onEditStudent={(student) => openDialog('student', student)}
         onDeleteStudent={(studentId) => handleDelete('student', studentId)}
+        onDeleteStudents={handleDeleteStudents}
         onAddStudent={handleAddStudentToClasse}
       />
     );

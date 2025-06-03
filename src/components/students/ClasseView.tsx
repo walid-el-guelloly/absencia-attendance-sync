@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, GraduationCap, Search, Edit, Trash2, Plus, UserPlus } from 'lucide-react';
 import { Classe, Student, Filiere } from '@/utils/studentStorage';
 
@@ -16,12 +18,14 @@ interface ClasseViewProps {
   onEditClasse: (classe: Classe) => void;
   onEditStudent: (student: Student) => void;
   onDeleteStudent: (studentId: string) => void;
+  onDeleteStudents: (studentIds: string[]) => void;
   onAddStudent: (student: Omit<Student, 'id' | 'createdAt'>) => void;
 }
 
-const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditClasse, onEditStudent, onDeleteStudent, onAddStudent }: ClasseViewProps) => {
+const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditClasse, onEditStudent, onDeleteStudent, onDeleteStudents, onAddStudent }: ClasseViewProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     nom: '',
     prenom: '',
@@ -65,6 +69,31 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
     });
     
     setIsAddDialogOpen(false);
+  };
+
+  const handleSelectStudent = (studentId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedStudents([...selectedStudents, studentId]);
+    } else {
+      setSelectedStudents(selectedStudents.filter(id => id !== studentId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedStudents(filteredStudents.map(s => s.id));
+    } else {
+      setSelectedStudents([]);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedStudents.length === 0) return;
+    
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${selectedStudents.length} stagiaire(s) ?`)) {
+      onDeleteStudents(selectedStudents);
+      setSelectedStudents([]);
+    }
   };
 
   return (
@@ -118,6 +147,32 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
             </div>
           </div>
 
+          {/* Selection controls */}
+          {filteredStudents.length > 0 && (
+            <div className="mb-4 flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  checked={selectedStudents.length === filteredStudents.length}
+                  onCheckedChange={handleSelectAll}
+                  className="border-slate-500"
+                />
+                <span className="text-slate-300">
+                  Sélectionner tout ({selectedStudents.length}/{filteredStudents.length})
+                </span>
+              </div>
+              {selectedStudents.length > 0 && (
+                <Button
+                  onClick={handleDeleteSelected}
+                  variant="destructive"
+                  size="sm"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Supprimer sélectionnés ({selectedStudents.length})
+                </Button>
+              )}
+            </div>
+          )}
+
           <div className="mb-4">
             <p className="text-slate-300">
               <span className="font-semibold text-white">{filteredStudents.length}</span> stagiaire(s) 
@@ -147,6 +202,11 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
                 <Card key={student.id} className="bg-slate-700/30 border-slate-600 hover:bg-slate-700/50 transition-colors">
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-3 mb-3">
+                      <Checkbox
+                        checked={selectedStudents.includes(student.id)}
+                        onCheckedChange={(checked) => handleSelectStudent(student.id, !!checked)}
+                        className="border-slate-500"
+                      />
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
                         student.sexe === 'M' ? 'bg-blue-500' : 'bg-pink-500'
                       }`}>
