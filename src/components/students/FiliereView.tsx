@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,11 @@ const FiliereView = ({ filiere, classes, students, onBack, onViewClasse, onEditF
     return studentClasse !== undefined;
   });
 
+  const handleEditFiliereClick = () => {
+    console.log('Tentative de modification de la filière:', filiere);
+    onEditFiliere(filiere);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -35,7 +39,7 @@ const FiliereView = ({ filiere, classes, students, onBack, onViewClasse, onEditF
           Retour
         </Button>
         <Button
-          onClick={() => onEditFiliere(filiere)}
+          onClick={handleEditFiliereClick}
           className="bg-blue-500 hover:bg-blue-600"
         >
           Modifier la filière

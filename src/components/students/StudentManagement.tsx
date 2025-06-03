@@ -258,6 +258,22 @@ const StudentManagement = () => {
     setSelectedStudentObj(null);
   };
 
+  // Handlers for editing from sub-views
+  const handleEditFiliere = (filiere: Filiere) => {
+    console.log('Edit filière appelé depuis FiliereView:', filiere);
+    openDialog('filiere', filiere);
+  };
+
+  const handleEditClasse = (classe: Classe) => {
+    console.log('Edit classe appelé depuis ClasseView:', classe);
+    openDialog('classe', classe);
+  };
+
+  const handleEditStudent = (student: Student) => {
+    console.log('Edit student appelé depuis ClasseView:', student);
+    openDialog('student', student);
+  };
+
   // Render different views
   if (currentView === 'student' && selectedStudentObj) {
     const student = selectedStudentObj;
@@ -282,7 +298,7 @@ const StudentManagement = () => {
         classe={classe}
         filiere={filiere}
         onBack={selectedClasseObj ? handleBackToFiliere : handleBackToOverview}
-        onEdit={(student) => openDialog('student', student)}
+        onEdit={handleEditStudent}
       />
     );
   }
@@ -310,8 +326,8 @@ const StudentManagement = () => {
         students={students}
         onBack={selectedFiliereObj ? () => setCurrentView('filiere') : handleBackToOverview}
         onViewStudent={handleViewStudent}
-        onEditClasse={(classe) => openDialog('classe', classe)}
-        onEditStudent={(student) => openDialog('student', student)}
+        onEditClasse={handleEditClasse}
+        onEditStudent={handleEditStudent}
         onDeleteStudent={(studentId) => handleDelete('student', studentId)}
         onDeleteStudents={handleDeleteStudents}
         onAddStudent={handleAddStudentToClasse}
@@ -327,7 +343,7 @@ const StudentManagement = () => {
         students={students}
         onBack={handleBackToOverview}
         onViewClasse={handleViewClasse}
-        onEditFiliere={(filiere) => openDialog('filiere', filiere)}
+        onEditFiliere={handleEditFiliere}
         onDeleteClasse={(classeId) => handleDelete('classe', classeId)}
       />
     );

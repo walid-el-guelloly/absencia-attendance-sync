@@ -96,6 +96,11 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
     }
   };
 
+  const handleEditClasseClick = () => {
+    console.log('Tentative de modification de la classe:', classe);
+    onEditClasse(classe);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -116,7 +121,7 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
             Ajouter Stagiaire
           </Button>
           <Button
-            onClick={() => onEditClasse(classe)}
+            onClick={handleEditClasseClick}
             className="bg-purple-500 hover:bg-purple-600"
           >
             Modifier la classe
