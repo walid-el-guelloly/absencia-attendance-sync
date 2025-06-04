@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,16 +31,29 @@ const FormDialog = ({
   const [formData, setFormData] = useState<any>({});
 
   useEffect(() => {
-    if (editingItem) {
-      setFormData(editingItem);
-    } else {
-      const defaultData = type === 'student' ? { statut: 'actif' } : {};
-      setFormData(defaultData);
+    console.log('FormDialog useEffect - editingItem:', editingItem, 'type:', type, 'isOpen:', isOpen);
+    
+    if (isOpen) {
+      if (editingItem && editingItem.id) {
+        // Mode édition - charger les données existantes
+        console.log('Mode édition, chargement des données:', editingItem);
+        setFormData({ ...editingItem });
+      } else if (editingItem && editingItem.filiereId && type === 'classe') {
+        // Mode ajout de classe avec filière pré-sélectionnée
+        console.log('Mode ajout classe avec filière pré-sélectionnée:', editingItem.filiereId);
+        setFormData({ filiereId: editingItem.filiereId });
+      } else {
+        // Mode ajout normal
+        console.log('Mode ajout normal');
+        const defaultData = type === 'student' ? { statut: 'actif' } : {};
+        setFormData(defaultData);
+      }
     }
   }, [editingItem, type, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Soumission du formulaire:', { type, formData, editingItem });
     
     // Validation
     if (type === 'filiere' && (!formData.code || !formData.nom)) {
@@ -60,16 +72,17 @@ const FormDialog = ({
     let success = false;
     switch (type) {
       case 'filiere':
-        success = onSaveFiliere(formData, editingItem);
+        success = onSaveFiliere(formData, editingItem?.id ? editingItem : null);
         break;
       case 'classe':
-        success = onSaveClasse(formData, editingItem);
+        success = onSaveClasse(formData, editingItem?.id ? editingItem : null);
         break;
       case 'student':
-        success = onSaveStudent(formData, editingItem);
+        success = onSaveStudent(formData, editingItem?.id ? editingItem : null);
         break;
     }
 
+    console.log('Résultat de la sauvegarde:', success);
     if (success) {
       onClose();
     }
@@ -117,7 +130,13 @@ const FormDialog = ({
           <div className="space-y-4">
             <div>
               <label className="text-slate-300 text-sm font-medium mb-2 block">Filière *</label>
-              <Select value={formData.filiereId || ''} onValueChange={(value) => setFormData({ ...formData, filiereId: value })}>
+              <Select 
+                value={formData.filiereId || ''} 
+                onValueChange={(value) => {
+                  console.log('Sélection filière:', value);
+                  setFormData({ ...formData, filiereId: value });
+                }}
+              >
                 <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                   <SelectValue placeholder="Choisir une filière" />
                 </SelectTrigger>
@@ -270,16 +289,32 @@ const FormDialog = ({
     }
   };
 
+  const getDialogTitle = () => {
+    const isEditing = editingItem && editingItem.id;
+    const action = isEditing ? 'Modifier' : 'Ajouter';
+    
+    switch (type) {
+      case 'filiere':
+        return `${action} une filière`;
+      case 'classe':
+        return `${action} une classe`;
+      case 'student':
+        return `${action} un stagiaire`;
+      default:
+        return '';
+    }
+  };
+
+  const getButtonText = () => {
+    const isEditing = editingItem && editingItem.id;
+    return isEditing ? 'Modifier' : 'Ajouter';
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {editingItem && !editingItem.filiereId ? 'Modifier' : 'Ajouter'} {
-              type === 'filiere' ? 'une filière' :
-              type === 'classe' ? 'une classe' : 'un stagiaire'
-            }
-          </DialogTitle>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           {renderForm()}
@@ -288,7 +323,7 @@ const FormDialog = ({
               Annuler
             </Button>
             <Button type="submit" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-              {editingItem && !editingItem.filiereId ? 'Modifier' : 'Ajouter'}
+              {getButtonText()}
             </Button>
           </div>
         </form>

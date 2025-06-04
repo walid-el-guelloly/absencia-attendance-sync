@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, GraduationCap, Search, Edit, Trash2, Plus, UserPlus } from 'lucide-react';
+import { ArrowLeft, GraduationCap, Search, Edit, Trash2, UserPlus } from 'lucide-react';
 import { Classe, Student, Filiere } from '@/utils/studentStorage';
 
 interface ClasseViewProps {
@@ -98,7 +97,6 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
 
   const handleEditClasseClick = () => {
     console.log('Clic sur modifier classe - classe:', classe);
-    console.log('onEditClasse function:', onEditClasse);
     if (onEditClasse) {
       onEditClasse(classe);
     } else {
@@ -129,6 +127,7 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
             onClick={handleEditClasseClick}
             className="bg-purple-500 hover:bg-purple-600"
           >
+            <Edit className="w-4 h-4 mr-2" />
             Modifier la classe
           </Button>
         </div>

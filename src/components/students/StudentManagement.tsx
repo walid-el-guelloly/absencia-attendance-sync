@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Filiere, Classe, Student } from '@/utils/studentStorage';
@@ -79,21 +78,23 @@ const StudentManagement = () => {
   // Handler pour ajouter une classe à une filière spécifique
   const handleAddClasseToFiliere = (filiereId: string) => {
     console.log('Ajout classe à la filière:', filiereId);
+    const newEditingItem = { filiereId };
+    console.log('Setting editingItem to:', newEditingItem);
     setDialogType('classe');
-    setEditingItem({ filiereId }); // Pré-remplir avec l'ID de la filière
+    setEditingItem(newEditingItem);
     setIsDialogOpen(true);
   };
 
   // Handlers for editing from sub-views
   const handleEditClasse = (classe: Classe) => {
-    console.log('Edit classe appelé depuis ClasseView:', classe);
+    console.log('Edit classe appelé:', classe);
     setDialogType('classe');
     setEditingItem(classe);
     setIsDialogOpen(true);
   };
 
   const handleEditStudent = (student: Student) => {
-    console.log('Edit student appelé depuis ClasseView:', student);
+    console.log('Edit student appelé:', student);
     setDialogType('student');
     setEditingItem(student);
     setIsDialogOpen(true);
@@ -109,6 +110,7 @@ const StudentManagement = () => {
   };
 
   const handleSaveClasseWithClose = (data: any) => {
+    console.log('Sauvegarde classe avec fermeture:', data, editingItem);
     const success = handleSaveClasse(data, editingItem);
     if (success) {
       closeDialog();
