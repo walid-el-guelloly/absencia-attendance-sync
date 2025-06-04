@@ -1,8 +1,9 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ArrowLeft, GraduationCap, Users, BookOpen, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, GraduationCap, Users, Trash2, AlertTriangle, Plus } from 'lucide-react';
 import { Filiere, Classe, Student } from '@/utils/studentStorage';
 
 interface FiliereViewProps {
@@ -11,26 +12,16 @@ interface FiliereViewProps {
   students: Student[];
   onBack: () => void;
   onViewClasse: (classe: Classe) => void;
-  onEditFiliere: (filiere: Filiere) => void;
   onDeleteClasse?: (classeId: string) => void;
+  onAddClasse?: (filiereId: string) => void;
 }
 
-const FiliereView = ({ filiere, classes, students, onBack, onViewClasse, onEditFiliere, onDeleteClasse }: FiliereViewProps) => {
+const FiliereView = ({ filiere, classes, students, onBack, onViewClasse, onDeleteClasse, onAddClasse }: FiliereViewProps) => {
   const filiereClasses = classes.filter(c => c.filiereId === filiere.id);
   const filiereStudents = students.filter(s => {
     const studentClasse = filiereClasses.find(c => c.id === s.classeId);
     return studentClasse !== undefined;
   });
-
-  const handleEditFiliereClick = () => {
-    console.log('Clic sur modifier filière - filière:', filiere);
-    console.log('onEditFiliere function:', onEditFiliere);
-    if (onEditFiliere) {
-      onEditFiliere(filiere);
-    } else {
-      console.error('onEditFiliere function is not defined');
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -43,18 +34,23 @@ const FiliereView = ({ filiere, classes, students, onBack, onViewClasse, onEditF
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Button>
-        <Button
-          onClick={handleEditFiliereClick}
-          className="bg-blue-500 hover:bg-blue-600"
-        >
-          Modifier la filière
-        </Button>
+        {onAddClasse && (
+          <Button
+            onClick={() => onAddClasse(filiere.id)}
+            className="bg-blue-500 hover:bg-blue-600"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Ajouter une classe
+          </Button>
+        )}
       </div>
 
       <Card className="bg-slate-800/50 backdrop-blur-xl border-blue-500/20">
         <CardHeader>
           <CardTitle className="text-white flex items-center space-x-3">
-            <BookOpen className="w-8 h-8 text-blue-400" />
+            <div className="p-2 bg-blue-500/20 rounded-lg">
+              <GraduationCap className="w-8 h-8 text-blue-400" />
+            </div>
             <div>
               <h2 className="text-2xl font-bold">{filiere.code}</h2>
               <p className="text-slate-400">{filiere.nom}</p>

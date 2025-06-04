@@ -35,9 +35,8 @@ const FormDialog = ({
     if (editingItem) {
       setFormData(editingItem);
     } else {
-      setFormData(
-        type === 'student' ? { statut: 'actif' } : {}
-      );
+      const defaultData = type === 'student' ? { statut: 'actif' } : {};
+      setFormData(defaultData);
     }
   }, [editingItem, type, isOpen]);
 
@@ -276,7 +275,7 @@ const FormDialog = ({
       <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {editingItem ? 'Modifier' : 'Ajouter'} {
+            {editingItem && !editingItem.filiereId ? 'Modifier' : 'Ajouter'} {
               type === 'filiere' ? 'une filière' :
               type === 'classe' ? 'une classe' : 'un stagiaire'
             }
@@ -289,7 +288,7 @@ const FormDialog = ({
               Annuler
             </Button>
             <Button type="submit" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-              {editingItem ? 'Modifier' : 'Ajouter'}
+              {editingItem && !editingItem.filiereId ? 'Modifier' : 'Ajouter'}
             </Button>
           </div>
         </form>

@@ -76,14 +76,15 @@ const StudentManagement = () => {
     setSelectedStudentObj(null);
   };
 
-  // Handlers for editing from sub-views
-  const handleEditFiliere = (filiere: Filiere) => {
-    console.log('Edit filière appelé depuis FiliereView:', filiere);
-    setDialogType('filiere');
-    setEditingItem(filiere);
+  // Handler pour ajouter une classe à une filière spécifique
+  const handleAddClasseToFiliere = (filiereId: string) => {
+    console.log('Ajout classe à la filière:', filiereId);
+    setDialogType('classe');
+    setEditingItem({ filiereId }); // Pré-remplir avec l'ID de la filière
     setIsDialogOpen(true);
   };
 
+  // Handlers for editing from sub-views
   const handleEditClasse = (classe: Classe) => {
     console.log('Edit classe appelé depuis ClasseView:', classe);
     setDialogType('classe');
@@ -192,8 +193,8 @@ const StudentManagement = () => {
         students={students}
         onBack={handleBackToOverview}
         onViewClasse={handleViewClasse}
-        onEditFiliere={handleEditFiliere}
         onDeleteClasse={(classeId) => handleDelete('classe', classeId)}
+        onAddClasse={handleAddClasseToFiliere}
       />
     );
   }
