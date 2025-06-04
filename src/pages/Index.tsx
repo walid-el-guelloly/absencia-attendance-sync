@@ -14,6 +14,7 @@ interface User {
   email: string;
   role: 'admin' | 'directeur' | 'surveillant' | 'formateur';
   username?: string;
+  fullName?: string;
 }
 
 const Index = () => {
@@ -22,21 +23,26 @@ const Index = () => {
 
   useEffect(() => {
     // Check for existing session
-    const savedUser = localStorage.getItem('absencia_user');
+    const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Erreur lors du chargement de l\'utilisateur:', error);
+        localStorage.removeItem('user');
+      }
     }
     setIsLoading(false);
   }, []);
 
   const handleLogin = (userData: User) => {
     setUser(userData);
-    localStorage.setItem('absencia_user', JSON.stringify(userData));
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const handleLogout = () => {
     setUser(null);
-    localStorage.removeItem('absencia_user');
+    localStorage.removeItem('user');
   };
 
   if (isLoading) {

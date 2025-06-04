@@ -19,40 +19,31 @@ interface User {
   email: string;
 }
 
-// Mock users avec noms complets
-const mockUsers: User[] = [
-  { id: '1', username: 'admin', fullName: 'Mohammed Alami', role: 'admin', email: 'admin@cfm.ofppt.ma' },
-  { id: '2', username: 'directeur', fullName: 'Fatima Benali', role: 'directeur', email: 'directeur@cfm.ofppt.ma' },
-  { id: '3', username: 'surveillant', fullName: 'Youssef Idrissi', role: 'surveillant', email: 'surveillant@cfm.ofppt.ma' },
-  { id: '4', username: 'formateur', fullName: 'Aicha Zahra', role: 'formateur', email: 'formateur@cfm.ofppt.ma' }
-];
-
 function App() {
   const [user, setUser] = useState<User | null>(null);
 
   const handleLogin = (userData: any) => {
     console.log('Tentative de connexion:', userData);
     
-    // Trouver l'utilisateur correspondant basé sur l'email et le rôle
-    const foundUser = mockUsers.find(u => 
-      u.email === userData.email && u.role === userData.role
-    );
+    // Créer directement l'utilisateur avec les données fournies
+    const newUser: User = {
+      id: userData.email,
+      username: userData.username || userData.email.split('@')[0],
+      fullName: userData.fullName || userData.username || userData.email.split('@')[0],
+      role: userData.role,
+      email: userData.email
+    };
     
-    if (foundUser) {
-      // Utiliser le username fourni ou celui par défaut
-      const userWithUsername = {
-        ...foundUser,
-        username: userData.username || foundUser.username
-      };
-      setUser(userWithUsername);
-      console.log('Connexion réussie pour:', userWithUsername);
-    } else {
-      console.log('Échec de la connexion');
-    }
+    console.log('Utilisateur créé:', newUser);
+    setUser(newUser);
+    
+    // Sauvegarder dans localStorage pour persister les données
+    localStorage.setItem('user', JSON.stringify(newUser));
   };
 
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem('user');
   };
 
   if (!user) {
