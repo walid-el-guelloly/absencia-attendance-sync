@@ -97,8 +97,13 @@ const ClasseView = ({ classe, filiere, students, onBack, onViewStudent, onEditCl
   };
 
   const handleEditClasseClick = () => {
-    console.log('Tentative de modification de la classe:', classe);
-    onEditClasse(classe);
+    console.log('Clic sur modifier classe - classe:', classe);
+    console.log('onEditClasse function:', onEditClasse);
+    if (onEditClasse) {
+      onEditClasse(classe);
+    } else {
+      console.error('onEditClasse function is not defined');
+    }
   };
 
   return (

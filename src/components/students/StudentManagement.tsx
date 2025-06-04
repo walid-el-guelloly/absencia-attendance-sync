@@ -261,17 +261,23 @@ const StudentManagement = () => {
   // Handlers for editing from sub-views
   const handleEditFiliere = (filiere: Filiere) => {
     console.log('Edit filière appelé depuis FiliereView:', filiere);
-    openDialog('filiere', filiere);
+    setDialogType('filiere');
+    setEditingItem(filiere);
+    setIsDialogOpen(true);
   };
 
   const handleEditClasse = (classe: Classe) => {
     console.log('Edit classe appelé depuis ClasseView:', classe);
-    openDialog('classe', classe);
+    setDialogType('classe');
+    setEditingItem(classe);
+    setIsDialogOpen(true);
   };
 
   const handleEditStudent = (student: Student) => {
     console.log('Edit student appelé depuis ClasseView:', student);
-    openDialog('student', student);
+    setDialogType('student');
+    setEditingItem(student);
+    setIsDialogOpen(true);
   };
 
   // Render different views

@@ -23,8 +23,13 @@ const FiliereView = ({ filiere, classes, students, onBack, onViewClasse, onEditF
   });
 
   const handleEditFiliereClick = () => {
-    console.log('Tentative de modification de la filière:', filiere);
-    onEditFiliere(filiere);
+    console.log('Clic sur modifier filière - filière:', filiere);
+    console.log('onEditFiliere function:', onEditFiliere);
+    if (onEditFiliere) {
+      onEditFiliere(filiere);
+    } else {
+      console.error('onEditFiliere function is not defined');
+    }
   };
 
   return (

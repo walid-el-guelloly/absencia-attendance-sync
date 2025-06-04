@@ -15,18 +15,30 @@ const Header = ({ user, onLogout, onToggleSidebar }: HeaderProps) => {
   const [displayName, setDisplayName] = useState('');
 
   useEffect(() => {
-    // Récupérer le nom complet depuis le localStorage
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        setDisplayName(userData.fullName || userData.username || user.username);
-      } catch (error) {
-        console.error('Erreur lors de la lecture des données utilisateur:', error);
-        setDisplayName(user.fullName || user.username);
-      }
+    console.log('User object in Header:', user);
+    
+    // Utiliser directement le nom d'utilisateur saisi lors de la connexion
+    if (user) {
+      // Priorité : fullName > username
+      const name = user.fullName || user.username || 'Utilisateur';
+      console.log('Setting display name to:', name);
+      setDisplayName(name);
     } else {
-      setDisplayName(user.fullName || user.username);
+      // Fallback: essayer de récupérer depuis localStorage
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          const userData = JSON.parse(savedUser);
+          const name = userData.fullName || userData.username || 'Utilisateur';
+          console.log('Setting display name from localStorage to:', name);
+          setDisplayName(name);
+        } catch (error) {
+          console.error('Erreur lors de la lecture des données utilisateur:', error);
+          setDisplayName('Utilisateur');
+        }
+      } else {
+        setDisplayName('Utilisateur');
+      }
     }
   }, [user]);
 
@@ -87,7 +99,7 @@ const Header = ({ user, onLogout, onToggleSidebar }: HeaderProps) => {
             <User className="w-3 h-3 text-blue-400" />
             <div className="text-xs">
               <p className="text-white font-medium">{displayName}</p>
-              <p className="text-slate-400 text-xs capitalize">{user.role}</p>
+              <p className="text-slate-400 text-xs capitalize">{user?.role || 'admin'}</p>
             </div>
           </div>
           
