@@ -48,6 +48,9 @@ const FormDialog = ({
         const defaultData = type === 'student' ? { statut: 'actif' } : {};
         setFormData(defaultData);
       }
+    } else {
+      // Reset form when dialog closes
+      setFormData({});
     }
   }, [editingItem, type, isOpen]);
 
@@ -83,9 +86,12 @@ const FormDialog = ({
     }
 
     console.log('Résultat de la sauvegarde:', success);
-    if (success) {
-      onClose();
-    }
+  };
+
+  const handleClose = () => {
+    console.log('Fermeture manuelle du dialog');
+    setFormData({});
+    onClose();
   };
 
   const renderForm = () => {
@@ -311,7 +317,7 @@ const FormDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-md">
         <DialogHeader>
           <DialogTitle>{getDialogTitle()}</DialogTitle>
@@ -319,7 +325,7 @@ const FormDialog = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           {renderForm()}
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose} className="border-slate-600 text-slate-300">
+            <Button type="button" variant="outline" onClick={handleClose} className="border-slate-600 text-slate-300">
               Annuler
             </Button>
             <Button type="submit" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">

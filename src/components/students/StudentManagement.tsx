@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Filiere, Classe, Student } from '@/utils/studentStorage';
@@ -39,6 +40,7 @@ const StudentManagement = () => {
   };
 
   const closeDialog = () => {
+    console.log('Fermeture du dialog');
     setIsDialogOpen(false);
     setEditingItem(null);
   };
@@ -80,28 +82,31 @@ const StudentManagement = () => {
     console.log('Ajout classe à la filière:', filiereId);
     const newEditingItem = { filiereId };
     console.log('Setting editingItem to:', newEditingItem);
-    setDialogType('classe');
-    setEditingItem(newEditingItem);
-    setIsDialogOpen(true);
+    openDialog('classe', newEditingItem);
   };
 
-  // Handlers for editing from sub-views
+  // Handlers for editing from sub-views - CORRECTION ICI
   const handleEditClasse = (classe: Classe) => {
-    console.log('Edit classe appelé:', classe);
-    setDialogType('classe');
-    setEditingItem(classe);
-    setIsDialogOpen(true);
+    console.log('Edit classe appelé avec:', classe);
+    if (!classe || !classe.id) {
+      console.error('Classe invalide pour édition:', classe);
+      return;
+    }
+    openDialog('classe', classe);
   };
 
   const handleEditStudent = (student: Student) => {
     console.log('Edit student appelé:', student);
-    setDialogType('student');
-    setEditingItem(student);
-    setIsDialogOpen(true);
+    if (!student || !student.id) {
+      console.error('Student invalide pour édition:', student);
+      return;
+    }
+    openDialog('student', student);
   };
 
   // Save handlers with dialog closing
   const handleSaveFiliereWithClose = (data: any) => {
+    console.log('Sauvegarde filière avec fermeture:', data);
     const success = handleSaveFiliere(data, editingItem);
     if (success) {
       closeDialog();
@@ -119,6 +124,7 @@ const StudentManagement = () => {
   };
 
   const handleSaveStudentWithClose = (data: any) => {
+    console.log('Sauvegarde student avec fermeture:', data);
     const success = handleSaveStudent(data, editingItem);
     if (success) {
       closeDialog();
