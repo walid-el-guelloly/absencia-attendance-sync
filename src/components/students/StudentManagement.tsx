@@ -1,12 +1,8 @@
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Filiere, Classe, Student } from '@/utils/studentStorage';
 import { useStudentData } from '@/hooks/useStudentData';
-import FiliereView from './FiliereView';
-import ClasseView from './ClasseView';
-import StudentDetails from './StudentDetails';
-import StudentOverview from './StudentOverview';
+import { useNavigationHandlers } from '@/hooks/useNavigationHandlers';
+import { useDialogHandlers } from '@/hooks/useDialogHandlers';
+import ViewRenderer from './ViewRenderer';
 import FormDialog from './FormDialog';
 
 const StudentManagement = () => {
@@ -14,213 +10,61 @@ const StudentManagement = () => {
     filieres,
     classes,
     students,
-    handleSaveFiliere,
-    handleSaveClasse,
-    handleSaveStudent,
     handleAddStudentToClasse,
     handleDelete,
     handleDeleteStudents
   } = useStudentData();
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState<'filiere' | 'classe' | 'student'>('filiere');
-  const [editingItem, setEditingItem] = useState<any>(null);
-  
-  // Navigation states
-  const [currentView, setCurrentView] = useState<'overview' | 'filiere' | 'classe' | 'student'>('overview');
-  const [selectedFiliereObj, setSelectedFiliereObj] = useState<Filiere | null>(null);
-  const [selectedClasseObj, setSelectedClasseObj] = useState<Classe | null>(null);
-  const [selectedStudentObj, setSelectedStudentObj] = useState<Student | null>(null);
+  const {
+    currentView,
+    selectedFiliereObj,
+    selectedClasseObj,
+    selectedStudentObj,
+    handleViewFiliere,
+    handleViewClasse,
+    handleViewStudent,
+    handleBackToOverview,
+    handleBackToFiliere
+  } = useNavigationHandlers();
 
-  const openDialog = (type: 'filiere' | 'classe' | 'student', item?: any) => {
-    console.log('Ouverture du dialog:', type, item);
-    setDialogType(type);
-    setEditingItem(item || null);
-    setIsDialogOpen(true);
-  };
+  const {
+    isDialogOpen,
+    dialogType,
+    editingItem,
+    openDialog,
+    closeDialog,
+    handleAddClasseToFiliere,
+    handleEditClasse,
+    handleEditStudent,
+    handleSaveFiliereWithClose,
+    handleSaveClasseWithClose,
+    handleSaveStudentWithClose
+  } = useDialogHandlers();
 
-  const closeDialog = () => {
-    console.log('Fermeture du dialog');
-    setIsDialogOpen(false);
-    setEditingItem(null);
-  };
-
-  // Navigation handlers
-  const handleViewFiliere = (filiere: Filiere) => {
-    console.log('Affichage filière:', filiere);
-    setSelectedFiliereObj(filiere);
-    setCurrentView('filiere');
-  };
-
-  const handleViewClasse = (classe: Classe) => {
-    console.log('Affichage classe:', classe);
-    setSelectedClasseObj(classe);
-    setCurrentView('classe');
-  };
-
-  const handleViewStudent = (student: Student) => {
-    console.log('Affichage stagiaire:', student);
-    setSelectedStudentObj(student);
-    setCurrentView('student');
-  };
-
-  const handleBackToOverview = () => {
-    setCurrentView('overview');
-    setSelectedFiliereObj(null);
-    setSelectedClasseObj(null);
-    setSelectedStudentObj(null);
-  };
-
-  const handleBackToFiliere = () => {
-    setCurrentView('filiere');
-    setSelectedClasseObj(null);
-    setSelectedStudentObj(null);
-  };
-
-  // Handler pour ajouter une classe à une filière spécifique
-  const handleAddClasseToFiliere = (filiereId: string) => {
-    console.log('Ajout classe à la filière:', filiereId);
-    const newEditingItem = { filiereId };
-    console.log('Setting editingItem to:', newEditingItem);
-    openDialog('classe', newEditingItem);
-  };
-
-  // Handlers for editing from sub-views - CORRECTION ICI
-  const handleEditClasse = (classe: Classe) => {
-    console.log('Edit classe appelé avec:', classe);
-    if (!classe || !classe.id) {
-      console.error('Classe invalide pour édition:', classe);
-      return;
-    }
-    openDialog('classe', classe);
-  };
-
-  const handleEditStudent = (student: Student) => {
-    console.log('Edit student appelé:', student);
-    if (!student || !student.id) {
-      console.error('Student invalide pour édition:', student);
-      return;
-    }
-    openDialog('student', student);
-  };
-
-  // Save handlers with dialog closing
-  const handleSaveFiliereWithClose = (data: any) => {
-    console.log('Sauvegarde filière avec fermeture:', data);
-    const success = handleSaveFiliere(data, editingItem);
-    if (success) {
-      closeDialog();
-    }
-    return success;
-  };
-
-  const handleSaveClasseWithClose = (data: any) => {
-    console.log('Sauvegarde classe avec fermeture:', data, editingItem);
-    const success = handleSaveClasse(data, editingItem);
-    if (success) {
-      closeDialog();
-    }
-    return success;
-  };
-
-  const handleSaveStudentWithClose = (data: any) => {
-    console.log('Sauvegarde student avec fermeture:', data);
-    const success = handleSaveStudent(data, editingItem);
-    if (success) {
-      closeDialog();
-    }
-    return success;
-  };
-
-  // Render different views
-  if (currentView === 'student' && selectedStudentObj) {
-    const student = selectedStudentObj;
-    const classe = classes.find(c => c.id === student.classeId);
-    const filiere = filieres.find(f => f.id === classe?.filiereId);
-    
-    if (!classe || !filiere) {
-      console.error('Classe ou filière non trouvée pour le stagiaire:', student);
-      return (
-        <div className="text-center py-12">
-          <p className="text-red-400">Erreur: Données manquantes pour ce stagiaire</p>
-          <Button onClick={handleBackToOverview} className="mt-4">
-            Retour à l'aperçu
-          </Button>
-        </div>
-      );
-    }
-    
-    return (
-      <StudentDetails
-        student={student}
-        classe={classe}
-        filiere={filiere}
-        onBack={selectedClasseObj ? handleBackToFiliere : handleBackToOverview}
-        onEdit={handleEditStudent}
-      />
-    );
-  }
-
-  if (currentView === 'classe' && selectedClasseObj) {
-    const classe = selectedClasseObj;
-    const filiere = filieres.find(f => f.id === classe.filiereId);
-    
-    if (!filiere) {
-      console.error('Filière non trouvée pour la classe:', classe);
-      return (
-        <div className="text-center py-12">
-          <p className="text-red-400">Erreur: Filière non trouvée pour cette classe</p>
-          <Button onClick={handleBackToOverview} className="mt-4">
-            Retour à l'aperçu
-          </Button>
-        </div>
-      );
-    }
-    
-    return (
-      <ClasseView
-        classe={classe}
-        filiere={filiere}
-        students={students}
-        onBack={selectedFiliereObj ? () => setCurrentView('filiere') : handleBackToOverview}
-        onViewStudent={handleViewStudent}
-        onEditClasse={handleEditClasse}
-        onEditStudent={handleEditStudent}
-        onDeleteStudent={(studentId) => handleDelete('student', studentId)}
-        onDeleteStudents={handleDeleteStudents}
-        onAddStudent={handleAddStudentToClasse}
-      />
-    );
-  }
-
-  if (currentView === 'filiere' && selectedFiliereObj) {
-    return (
-      <FiliereView
-        filiere={selectedFiliereObj}
-        classes={classes}
-        students={students}
-        onBack={handleBackToOverview}
-        onViewClasse={handleViewClasse}
-        onDeleteClasse={(classeId) => handleDelete('classe', classeId)}
-        onAddClasse={handleAddClasseToFiliere}
-      />
-    );
-  }
-
-  // Overview/main view
   return (
     <>
-      <StudentOverview
+      <ViewRenderer
+        currentView={currentView}
+        selectedFiliereObj={selectedFiliereObj}
+        selectedClasseObj={selectedClasseObj}
+        selectedStudentObj={selectedStudentObj}
         filieres={filieres}
         classes={classes}
         students={students}
         onViewFiliere={handleViewFiliere}
+        onViewClasse={handleViewClasse}
         onViewStudent={handleViewStudent}
+        onBackToOverview={handleBackToOverview}
+        onBackToFiliere={handleBackToFiliere}
         onOpenDialog={openDialog}
         onDelete={handleDelete}
+        onDeleteStudents={handleDeleteStudents}
+        onAddStudentToClasse={handleAddStudentToClasse}
+        onAddClasseToFiliere={handleAddClasseToFiliere}
+        onEditClasse={handleEditClasse}
+        onEditStudent={handleEditStudent}
       />
 
-      {/* Dialog for adding/editing */}
       <FormDialog
         isOpen={isDialogOpen}
         onClose={closeDialog}
