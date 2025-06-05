@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,8 +19,7 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
   const [selectedFiliere, setSelectedFiliere] = useState('');
   const [selectedClasse, setSelectedClasse] = useState('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
-  const [sessionId, setSessionId] = useState('');
-  const [absences, setAbsences] = useState<{[key: string]: { absent: boolean, retard: boolean }}>({});
+  const [absences, setAbsences] = useState<{[key: string]: { absent: boolean }}>({});
 
   const timeSlots = [
     { value: '08:30-11:00', label: '08:30–11:00' },
@@ -59,67 +59,33 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
       console.log('Classe sélectionnée:', selectedClasse);
       const classeStudents = students.filter(s => s.classeId === selectedClasse && s.statut === 'actif');
       console.log('Stagiaires de la classe:', classeStudents);
-      
-      // Load existing absences for this session to auto-check delays for justified absences
-      loadExistingAbsences();
     }
   }, [selectedClasse, students, selectedTimeSlot]);
-
-  const loadExistingAbsences = () => {
-    if (!selectedClasse || !selectedTimeSlot) return;
-    
-    const existingAbsences = studentStorage.getAbsences();
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Check for students with justified absences in this time slot by this teacher
-    const newAbsences: {[key: string]: { absent: boolean, retard: boolean }} = {};
-    
-    classeStudents.forEach(student => {
-      const studentAbsences = existingAbsences.filter(abs => 
-        abs.studentId === student.id && 
-        abs.date === today &&
-        abs.formateur === (user.fullName || user.username) &&
-        abs.validated === true && // Absence was justified
-        abs.type === 'absent'
-      );
-      
-      // If student had justified absence from this teacher today, auto-mark as delay
-      if (studentAbsences.length > 0) {
-        newAbsences[student.id] = { absent: false, retard: true };
-      }
-    });
-    
-    setAbsences(newAbsences);
-  };
 
   const filteredClasses = classes.filter(c => c.filiereId === selectedFiliere);
   const classeStudents = students.filter(s => s.classeId === selectedClasse && s.statut === 'actif');
 
-  const handleAbsenceChange = (studentId: string, type: 'absent' | 'retard', checked: boolean) => {
+  const handleAbsenceChange = (studentId: string, checked: boolean) => {
     setAbsences(prev => ({
       ...prev,
       [studentId]: {
-        ...prev[studentId],
-        [type]: checked,
-        // Si on coche absent, on décoche retard et vice versa
-        ...(type === 'absent' && checked ? { retard: false } : {}),
-        ...(type === 'retard' && checked ? { absent: false } : {})
+        absent: checked
       }
     }));
   };
 
   const handleSubmitAbsences = () => {
-    if (!selectedFiliere || !selectedClasse || !selectedTimeSlot || !sessionId.trim()) {
+    if (!selectedFiliere || !selectedClasse || !selectedTimeSlot) {
       toast({
         title: "Erreur",
-        description: "Veuillez sélectionner une filière, une classe, un créneau et saisir un ID de session",
+        description: "Veuillez sélectionner une filière, une classe et un créneau",
         variant: "destructive"
       });
       return;
     }
 
     const absencesToSave = Object.entries(absences).filter(([_, value]) => 
-      value.absent || value.retard
+      value.absent
     );
 
     if (absencesToSave.length === 0) {
@@ -138,20 +104,9 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
       if (value.absent) {
         studentStorage.addAbsence({
           studentId,
-          sessionId: `${sessionId.trim()}-${selectedTimeSlot}`,
+          sessionId: `${selectedTimeSlot}-${today}`,
           date: today,
           type: 'absent',
-          formateur: user.fullName || user.username,
-          validated: false
-        });
-        savedCount++;
-      }
-      if (value.retard) {
-        studentStorage.addAbsence({
-          studentId,
-          sessionId: `${sessionId.trim()}-${selectedTimeSlot}`,
-          date: today,
-          type: 'retard',
           formateur: user.fullName || user.username,
           validated: false
         });
@@ -161,7 +116,6 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
 
     // Reset form
     setAbsences({});
-    setSessionId('');
     
     toast({
       title: "Absences enregistrées",
@@ -176,7 +130,7 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Saisie des Absences</h1>
-          <p className="text-slate-400">Enregistrer les absences et retards des stagiaires</p>
+          <p className="text-slate-400">Enregistrer les absences des stagiaires</p>
         </div>
         <div className="text-right bg-slate-800/50 backdrop-blur-xl border border-blue-500/20 rounded-xl p-4">
           <p className="text-slate-400 text-sm">Formateur</p>
@@ -193,7 +147,7 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-slate-300 text-sm font-medium mb-2 block">Filière</label>
               <Select value={selectedFiliere} onValueChange={setSelectedFiliere}>
@@ -241,17 +195,6 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
                 </SelectContent>
               </Select>
             </div>
-
-            <div>
-              <label className="text-slate-300 text-sm font-medium mb-2 block">ID Session</label>
-              <input
-                type="text"
-                placeholder="ex: Math-Cours1"
-                value={sessionId}
-                onChange={(e) => setSessionId(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md text-white focus:border-blue-400 focus:outline-none placeholder:text-slate-400"
-              />
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -281,17 +224,16 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
             ) : (
               <div className="space-y-4">
                 <div className="grid grid-cols-12 gap-4 pb-3 border-b border-slate-700 text-slate-400 text-sm font-medium">
-                  <div className="col-span-6">Stagiaire</div>
+                  <div className="col-span-8">Stagiaire</div>
                   <div className="col-span-2 text-center">Absent</div>
-                  <div className="col-span-2 text-center">Retard</div>
                   <div className="col-span-2 text-center">Statut</div>
                 </div>
 
                 {classeStudents.map(student => {
-                  const studentAbsence = absences[student.id] || { absent: false, retard: false };
+                  const studentAbsence = absences[student.id] || { absent: false };
                   return (
                     <div key={student.id} className="grid grid-cols-12 gap-4 items-center p-3 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors">
-                      <div className="col-span-6 flex items-center space-x-3">
+                      <div className="col-span-8 flex items-center space-x-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${
                           student.sexe === 'M' ? 'bg-blue-500' : 'bg-pink-500'
                         }`}>
@@ -307,19 +249,9 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
                         <Checkbox
                           checked={studentAbsence.absent}
                           onCheckedChange={(checked) => 
-                            handleAbsenceChange(student.id, 'absent', checked as boolean)
+                            handleAbsenceChange(student.id, checked as boolean)
                           }
                           className="border-red-500 data-[state=checked]:bg-red-500"
-                        />
-                      </div>
-
-                      <div className="col-span-2 flex justify-center">
-                        <Checkbox
-                          checked={studentAbsence.retard}
-                          onCheckedChange={(checked) => 
-                            handleAbsenceChange(student.id, 'retard', checked as boolean)
-                          }
-                          className="border-orange-500 data-[state=checked]:bg-orange-500"
                         />
                       </div>
 
@@ -327,10 +259,6 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
                         {studentAbsence.absent ? (
                           <span className="px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full text-xs">
                             Absent
-                          </span>
-                        ) : studentAbsence.retard ? (
-                          <span className="px-2 py-1 bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded-full text-xs">
-                            Retard
                           </span>
                         ) : (
                           <span className="px-2 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs">
@@ -345,7 +273,7 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
                 <div className="pt-6 border-t border-slate-700 flex justify-end">
                   <Button
                     onClick={handleSubmitAbsences}
-                    disabled={Object.keys(absences).length === 0 || !sessionId.trim() || !selectedTimeSlot}
+                    disabled={Object.keys(absences).length === 0 || !selectedTimeSlot}
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-slate-600 disabled:to-slate-700"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />

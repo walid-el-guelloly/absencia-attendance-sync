@@ -7,12 +7,13 @@ export const useStudentData = () => {
   const [filieres, setFilieres] = useState<Filiere[]>([]);
   const [classes, setClasses] = useState<Classe[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     console.log('Initialisation du hook useStudentData');
     studentStorage.initializeDefaultData();
     loadData();
-  }, []);
+  }, [refreshKey]);
 
   const loadData = () => {
     console.log('Chargement des données dans useStudentData');
@@ -27,6 +28,10 @@ export const useStudentData = () => {
     setStudents(studentsData);
   };
 
+  const forceRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   const handleSaveFiliere = (data: any, editingItem: any) => {
     console.log('Sauvegarde filière:', data);
     try {
@@ -37,7 +42,7 @@ export const useStudentData = () => {
         studentStorage.addFiliere(data);
         toast({ title: "Filière ajoutée", description: "La nouvelle filière a été créée avec succès" });
       }
-      loadData();
+      forceRefresh();
       return true;
     } catch (error) {
       console.error('Erreur lors de la sauvegarde de la filière:', error);
@@ -60,7 +65,7 @@ export const useStudentData = () => {
         studentStorage.addClass(data);
         toast({ title: "Classe ajoutée", description: "La nouvelle classe a été créée avec succès" });
       }
-      loadData();
+      forceRefresh();
       return true;
     } catch (error) {
       console.error('Erreur lors de la sauvegarde de la classe:', error);
@@ -83,7 +88,7 @@ export const useStudentData = () => {
         studentStorage.addStudent(data);
         toast({ title: "Stagiaire ajouté", description: "Le nouveau stagiaire a été créé avec succès" });
       }
-      loadData();
+      forceRefresh();
       return true;
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du stagiaire:', error);
@@ -101,7 +106,7 @@ export const useStudentData = () => {
     try {
       studentStorage.addStudent(data);
       toast({ title: "Stagiaire ajouté", description: "Le nouveau stagiaire a été ajouté à la classe avec succès" });
-      loadData();
+      forceRefresh();
     } catch (error) {
       console.error('Erreur lors de l\'ajout du stagiaire:', error);
       toast({ 
@@ -147,7 +152,7 @@ export const useStudentData = () => {
           toast({ title: "Stagiaire supprimé", variant: "destructive" });
           break;
       }
-      loadData();
+      forceRefresh();
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
       toast({ 
@@ -169,7 +174,7 @@ export const useStudentData = () => {
         description: `${studentIds.length} stagiaire(s) supprimé(s) avec succès`,
         variant: "destructive" 
       });
-      loadData();
+      forceRefresh();
     } catch (error) {
       console.error('Erreur lors de la suppression multiple:', error);
       toast({ 
@@ -185,6 +190,7 @@ export const useStudentData = () => {
     classes,
     students,
     loadData,
+    forceRefresh,
     handleSaveFiliere,
     handleSaveClasse,
     handleSaveStudent,
