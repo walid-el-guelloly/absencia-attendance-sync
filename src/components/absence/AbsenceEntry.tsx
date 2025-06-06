@@ -19,7 +19,7 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
   const [selectedFiliere, setSelectedFiliere] = useState('');
   const [selectedClasse, setSelectedClasse] = useState('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
-  const [absences, setAbsences] = useState<{[key: string]: { absent: boolean }}>({});
+  const [absences, setAbsences] = useState<{[key: string]: { absent: boolean, retard: boolean }}>({});
 
   const timeSlots = [
     { value: '08:30-11:00', label: '08:30–11:00' },
@@ -55,12 +55,41 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
   }, [selectedFiliere]);
 
   useEffect(() => {
-    if (selectedClasse) {
-      console.log('Classe sélectionnée:', selectedClasse);
-      const classeStudents = students.filter(s => s.classeId === selectedClasse && s.statut === 'actif');
-      console.log('Stagiaires de la classe:', classeStudents);
+    if (selectedClasse && selectedTimeSlot) {
+      console.log('Classe et créneau sélectionnés:', selectedClasse, selectedTimeSlot);
+      checkForJustifiedAbsences();
     }
-  }, [selectedClasse, students, selectedTimeSlot]);
+  }, [selectedClasse, selectedTimeSlot, students]);
+
+  const checkForJustifiedAbsences = () => {
+    if (!selectedClasse || !selectedTimeSlot) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const sessionId = `${selectedTimeSlot}-${today}`;
+    const allAbsences = studentStorage.getAbsences();
+    
+    // Vérifier les absences justifiées pour cette séance
+    const justifiedAbsences = allAbsences.filter(absence => 
+      absence.date === today &&
+      absence.sessionId === sessionId &&
+      absence.validated &&
+      absence.justification &&
+      absence.formateur === (user.fullName || user.username)
+    );
+
+    console.log('Absences justifiées trouvées:', justifiedAbsences);
+
+    // Mettre automatiquement en retard les stagiaires avec absences justifiées
+    const updatedAbsences = { ...absences };
+    justifiedAbsences.forEach(absence => {
+      updatedAbsences[absence.studentId] = {
+        absent: false,
+        retard: true
+      };
+    });
+
+    setAbsences(updatedAbsences);
+  };
 
   const filteredClasses = classes.filter(c => c.filiereId === selectedFiliere);
   const classeStudents = students.filter(s => s.classeId === selectedClasse && s.statut === 'actif');
@@ -69,9 +98,22 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
     setAbsences(prev => ({
       ...prev,
       [studentId]: {
-        absent: checked
+        absent: checked,
+        retard: prev[studentId]?.retard || false
       }
     }));
+  };
+
+  const getStudentStatus = (studentId: string) => {
+    const studentAbsence = absences[studentId] || { absent: false, retard: false };
+    
+    if (studentAbsence.retard) {
+      return { status: 'retard', label: 'Retard', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
+    } else if (studentAbsence.absent) {
+      return { status: 'absent', label: 'Absent', color: 'bg-red-500/20 text-red-400 border-red-500/30' };
+    } else {
+      return { status: 'present', label: 'Présent', color: 'bg-green-500/20 text-green-400 border-green-500/30' };
+    }
   };
 
   const handleSubmitAbsences = () => {
@@ -230,7 +272,9 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
                 </div>
 
                 {classeStudents.map(student => {
-                  const studentAbsence = absences[student.id] || { absent: false };
+                  const studentAbsence = absences[student.id] || { absent: false, retard: false };
+                  const statusInfo = getStudentStatus(student.id);
+                  
                   return (
                     <div key={student.id} className="grid grid-cols-12 gap-4 items-center p-3 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors">
                       <div className="col-span-8 flex items-center space-x-3">
@@ -242,6 +286,11 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
                         <div>
                           <p className="text-white font-medium">{student.prenom} {student.nom}</p>
                           <p className="text-slate-400 text-sm">{student.email}</p>
+                          {studentAbsence.retard && (
+                            <p className="text-yellow-400 text-xs">
+                              ⚠️ Absence justifiée - Marqué en retard automatiquement
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -251,20 +300,15 @@ const AbsenceEntry = ({ user }: AbsenceEntryProps) => {
                           onCheckedChange={(checked) => 
                             handleAbsenceChange(student.id, checked as boolean)
                           }
-                          className="border-red-500 data-[state=checked]:bg-red-500"
+                          disabled={studentAbsence.retard}
+                          className="border-red-500 data-[state=checked]:bg-red-500 disabled:opacity-50"
                         />
                       </div>
 
                       <div className="col-span-2 text-center">
-                        {studentAbsence.absent ? (
-                          <span className="px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full text-xs">
-                            Absent
-                          </span>
-                        ) : (
-                          <span className="px-2 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs">
-                            Présent
-                          </span>
-                        )}
+                        <span className={`px-2 py-1 border rounded-full text-xs ${statusInfo.color}`}>
+                          {statusInfo.label}
+                        </span>
                       </div>
                     </div>
                   );
