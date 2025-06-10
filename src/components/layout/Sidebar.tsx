@@ -13,6 +13,7 @@ import {
   X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/hooks/useTheme';
 
 interface SidebarProps {
   user: any;
@@ -23,6 +24,9 @@ interface SidebarProps {
 const Sidebar = ({ user, isOpen = true, onClose }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme } = useTheme();
+
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const menuItems = [
     {
@@ -78,25 +82,33 @@ const Sidebar = ({ user, isOpen = true, onClose }: SidebarProps) => {
       
       {/* Sidebar */}
       <aside className={cn(
-        "fixed left-0 top-0 bottom-0 w-64 bg-slate-800/95 backdrop-blur-xl border-r border-blue-500/20 z-40 flex flex-col transition-all duration-300 shadow-2xl",
+        "fixed left-0 top-0 bottom-0 w-64 z-40 flex flex-col transition-all duration-300 shadow-2xl",
         "md:translate-x-0",
-        isOpen ? "translate-x-0" : "-translate-x-full"
+        isOpen ? "translate-x-0" : "-translate-x-full",
+        isDark 
+          ? "bg-slate-800/95 backdrop-blur-xl border-r border-blue-500/20" 
+          : "bg-white/95 backdrop-blur-xl border-r border-blue-200/50"
       )}>
         {/* Header with logo */}
-        <div className="p-6 border-b border-slate-700/50">
+        <div className={cn(
+          "p-6 border-b transition-colors",
+          isDark ? "border-slate-700/50" : "border-slate-200/50"
+        )}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/>
-                  <path d="M8 11l2 2 4-4" stroke="white" strokeWidth="2" fill="none"/>
-                </svg>
-              </div>
+              <img 
+                src="/lovable-uploads/fa016c12-0e1b-4487-a570-54462274ce38.png" 
+                alt="Absenta Logo" 
+                className="w-10 h-10 object-contain"
+              />
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                   Absenta
                 </h1>
-                <p className="text-slate-400 text-xs">Gestion des absences</p>
+                <p className={cn(
+                  "text-xs",
+                  isDark ? "text-slate-400" : "text-slate-500"
+                )}>Gestion des absences</p>
               </div>
             </div>
             
@@ -105,7 +117,12 @@ const Sidebar = ({ user, isOpen = true, onClose }: SidebarProps) => {
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="md:hidden text-slate-300 hover:text-white hover:bg-slate-700/50 h-8 w-8 p-0"
+              className={cn(
+                "md:hidden h-8 w-8 p-0 transition-colors",
+                isDark
+                  ? "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              )}
             >
               <X className="w-4 h-4" />
             </Button>
@@ -115,7 +132,10 @@ const Sidebar = ({ user, isOpen = true, onClose }: SidebarProps) => {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <div className="mb-4">
-            <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3 px-3">
+            <h2 className={cn(
+              "text-xs font-semibold uppercase tracking-wider mb-3 px-3",
+              isDark ? "text-slate-400" : "text-slate-500"
+            )}>
               Navigation
             </h2>
           </div>
@@ -137,10 +157,17 @@ const Sidebar = ({ user, isOpen = true, onClose }: SidebarProps) => {
                 className={cn(
                   "w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 text-left group relative",
                   isActive && isAccessible
-                    ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-white shadow-lg shadow-blue-500/10"
+                    ? isDark
+                      ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-white shadow-lg shadow-blue-500/10"
+                      : "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 text-blue-700 shadow-sm"
                     : isAccessible
-                    ? "text-slate-300 hover:text-white hover:bg-slate-700/50 hover:border-slate-600 border border-transparent"
-                    : "text-slate-500 cursor-not-allowed opacity-50 border border-transparent",
+                    ? isDark
+                      ? "text-slate-300 hover:text-white hover:bg-slate-700/50 hover:border-slate-600 border border-transparent"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-200 border border-transparent"
+                    : "cursor-not-allowed opacity-50 border border-transparent",
+                  isDark
+                    ? "text-slate-500"
+                    : "text-slate-400"
                 )}
               >
                 {isActive && isAccessible && (
@@ -148,7 +175,9 @@ const Sidebar = ({ user, isOpen = true, onClose }: SidebarProps) => {
                 )}
                 <Icon className={cn(
                   "w-5 h-5 transition-colors flex-shrink-0",
-                  isActive && isAccessible ? "text-blue-400" : "group-hover:text-blue-400"
+                  isActive && isAccessible 
+                    ? "text-blue-400" 
+                    : "group-hover:text-blue-400"
                 )} />
                 <span className="font-medium text-sm">{item.label}</span>
                 {!isAccessible && (
@@ -160,9 +189,15 @@ const Sidebar = ({ user, isOpen = true, onClose }: SidebarProps) => {
         </nav>
 
         {/* User info and footer */}
-        <div className="p-4 space-y-4 border-t border-slate-700/50">
+        <div className={cn(
+          "p-4 space-y-4 border-t transition-colors",
+          isDark ? "border-slate-700/50" : "border-slate-200/50"
+        )}>
           {/* User role info */}
-          <div className="bg-slate-700/30 rounded-lg p-3">
+          <div className={cn(
+            "rounded-lg p-3 transition-colors",
+            isDark ? "bg-slate-700/30" : "bg-slate-50"
+          )}>
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-xs font-bold">
@@ -170,10 +205,16 @@ const Sidebar = ({ user, isOpen = true, onClose }: SidebarProps) => {
                 </span>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-white text-sm font-medium truncate">
+                <p className={cn(
+                  "text-sm font-medium truncate",
+                  isDark ? "text-white" : "text-slate-900"
+                )}>
                   {user.fullName || user.username}
                 </p>
-                <p className="text-slate-400 text-xs capitalize">
+                <p className={cn(
+                  "text-xs capitalize",
+                  isDark ? "text-slate-400" : "text-slate-500"
+                )}>
                   {user.role}
                 </p>
               </div>
@@ -186,15 +227,26 @@ const Sidebar = ({ user, isOpen = true, onClose }: SidebarProps) => {
               <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-xs font-bold">T</span>
               </div>
-              <span className="text-slate-300 font-semibold text-sm">TechSol</span>
+              <span className={cn(
+                "font-semibold text-sm",
+                isDark ? "text-slate-300" : "text-slate-700"
+              )}>TechSol</span>
             </div>
-            <p className="text-slate-500 text-xs">Développé par TechSol</p>
+            <p className={cn(
+              "text-xs",
+              isDark ? "text-slate-500" : "text-slate-400"
+            )}>Développé par TechSol</p>
             
             <a
               href="https://www.linkedin.com/in/guewalid/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-1 text-slate-400 hover:text-blue-400 transition-colors duration-200 text-xs"
+              className={cn(
+                "inline-flex items-center space-x-1 transition-colors duration-200 text-xs",
+                isDark
+                  ? "text-slate-400 hover:text-blue-400"
+                  : "text-slate-500 hover:text-blue-600"
+              )}
             >
               <span>Privacy</span>
               <ExternalLink className="w-3 h-3" />
